@@ -13,7 +13,7 @@ import { formatarMoeda } from '@/src/utils/formatadores';
 import Image from 'next/image';
 import Link from 'next/link';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { ConfirmDialog } from '@/src/components/admin/ui/ConfirmDialog';
+import ConfirmDialog from '@/src/components/admin/ui/ConfirmDialog';
 
 function PageFilters() {
     const router = useRouter();
