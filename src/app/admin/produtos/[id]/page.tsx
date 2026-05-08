@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProdutoForm } from '@/src/components/admin/ProdutoForm';
+import ProdutoForm from '@/src/components/admin/ProdutoForm';
 import { ProdutoFormData, ProdutoUpdateSchema } from '@/src/utils/validators';
 import { useAdminProduto } from '@/src/viewmodels/adminProduto.vm';
 import { z } from 'zod';

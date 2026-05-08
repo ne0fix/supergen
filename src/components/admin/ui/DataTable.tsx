@@ -76,7 +76,7 @@ export function DataTable<T extends { id: string | number }>({
                             const value = getCellValue(row, col);
                             return (
                                 <td key={col.header} className="px-6 py-4">
-                                    {col.cell ? col.cell(value, row) : value}
+                                    {col.cell ? col.cell(value, row) : String(value ?? '')}
                                 </td>
                             );
                         })}

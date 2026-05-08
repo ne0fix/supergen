@@ -22,7 +22,7 @@ interface UseAdminProdutosReturn {
 export function useAdminProdutos(): UseAdminProdutosReturn {
     const searchParams = useSearchParams();
     const [produtos, setProdutos] = useState<ProdutoAdminDTO[]>([]);
-    const [pagination, setPagination] = useState(null);
+    const [pagination, setPagination] = useState<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

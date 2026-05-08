@@ -131,7 +131,7 @@ function ProdutosContent() {
     {
       header: 'Categoria',
       accessor: 'categoria',
-      cell: (value) => <Badge label={value} variant="categoria" />,
+      cell: (value) => <Badge label={value as string} variant="categoria" />,
     },
     {
       header: 'Preço',
@@ -141,7 +141,7 @@ function ProdutosContent() {
           {row.precoOriginal && (
             <p className="text-xs text-gray-400 line-through">{formatarMoeda(row.precoOriginal)}</p>
           )}
-          <span className="font-bold text-green-600">{formatarMoeda(value)}</span>
+          <span className="font-bold text-green-600">{formatarMoeda(value as number)}</span>
         </div>
       ),
     },
@@ -149,7 +149,7 @@ function ProdutosContent() {
       header: 'Estoque',
       accessor: 'emEstoque',
       cell: (value, row) => (
-        <Toggle label="" checked={value} onChange={(checked) => toggleEstoque(row.id, checked)} />
+        <Toggle label="" checked={value as boolean} onChange={(checked) => toggleEstoque(row.id, checked)} />
       ),
     },
     {
@@ -157,7 +157,7 @@ function ProdutosContent() {
       accessor: 'id',
       cell: (id, row) => (
         <div className="flex items-center gap-1">
-          <Link href={`/admin/produtos/${id}`} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Editar">
+          <Link href={`/admin/produtos/${id as string}`} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-900" title="Editar">
             <Edit size={15} />
           </Link>
           <button onClick={() => setExcluindo(row)} className="p-2 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600" title="Excluir">

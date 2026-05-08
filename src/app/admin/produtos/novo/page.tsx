@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ProdutoForm } from '@/src/components/admin/ProdutoForm';
+import ProdutoForm from '@/src/components/admin/ProdutoForm';
 import { ProdutoFormData } from '@/src/utils/validators';
 
 export default function NovoProdutoPage() {
