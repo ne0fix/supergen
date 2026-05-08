@@ -2,36 +2,81 @@
 
 Última atualização: 2026-05-08
 
-## Fase Atual: Fase 5 — Categorias + Seções Admin
+## Fase Atual: Fase 6 — Finalização + Deploy
 
 ## ✅ Concluído
 
 ### Fase 1 — Banco + BFF público
-- [x] ... (todos os 12 arquivos)
-- [x] Finalização da Fase 1 pelo usuário.
+- [x] prisma/schema.prisma
+- [x] prisma/seed.ts
+- [x] src/lib/prisma.ts
+- [x] src/lib/dto.ts (+ filtroCategoriaId/filtroTag em SecaoHomeDTO + secaoToAdminDTO)
+- [x] src/app/api/produtos/route.ts
+- [x] src/app/api/produtos/[id]/route.ts
+- [x] src/app/api/categorias/route.ts
+- [x] src/app/api/home/secoes/route.ts
+- [x] src/services/api/produto.api.ts (migrado para fetch)
+- [x] src/viewmodels/home.vm.ts
+- [x] src/viewmodels/categorias.vm.ts
+- [x] src/app/page.tsx (dinâmico via API)
 
 ### Fase 2 — Auth + Middleware
-- [x] ... (todos os 9 arquivos e dependências)
+- [x] src/lib/auth.ts
+- [x] src/lib/password.ts
+- [x] src/lib/rateLimit.ts
+- [x] src/app/api/auth/login/route.ts
+- [x] src/app/api/auth/logout/route.ts
+- [x] src/app/api/auth/me/route.ts
+- [x] middleware.ts
+- [x] src/app/admin/login/page.tsx
 
 ### Fase 3 — CRUD Admin de Produtos
-- [x] ... (todos os 21 arquivos e dependências)
+- [x] src/utils/validators.ts (+ CategoriaUpdateSchema, SecaoCreateSchema, OrdemItensSchema)
+- [x] src/app/api/admin/produtos/route.ts
+- [x] src/app/api/admin/produtos/[id]/route.ts
+- [x] src/app/api/admin/produtos/[id]/estoque/route.ts
+- [x] src/app/admin/layout.tsx
+- [x] src/components/admin/AdminSidebar.tsx
+- [x] src/components/admin/AdminTopBar.tsx
+- [x] src/app/admin/dashboard/page.tsx
+- [x] src/components/admin/ui/DataTable.tsx
+- [x] src/components/admin/ui/Toggle.tsx
+- [x] src/components/admin/ui/ConfirmDialog.tsx
+- [x] src/components/admin/ui/Badge.tsx
+- [x] src/components/admin/TagSelector.tsx
+- [x] src/components/admin/ProdutoForm.tsx
+- [x] src/app/admin/produtos/page.tsx
+- [x] src/app/admin/produtos/novo/page.tsx
+- [x] src/app/admin/produtos/[id]/page.tsx
 
 ### Fase 4 — Upload de Imagem
-- [x] Dependências instaladas (`@vercel/blob`)
 - [x] src/app/api/admin/upload/route.ts
 - [x] src/components/admin/ImageUpload.tsx
-- [x] src/components/admin/ProdutoForm.tsx (ATUALIZAR)
+- [x] src/components/admin/ProdutoForm.tsx (com ImageUpload)
 
-## 🔄 Em andamento
-- [ ] src/app/api/admin/categorias/route.ts
+### Fase 5 — Categorias + Seções Admin ✅ CONCLUÍDA
+- [x] src/app/api/admin/categorias/[id]/route.ts (PUT + DELETE com bloqueio 409)
+- [x] src/app/api/admin/secoes/route.ts (GET com produtosPrevia + POST)
+- [x] src/app/api/admin/secoes/[id]/route.ts (GET + PUT + DELETE)
+- [x] src/app/api/admin/secoes/[id]/toggle/route.ts (PATCH ativo)
+- [x] src/app/api/admin/secoes/[id]/itens/route.ts (POST)
+- [x] src/app/api/admin/secoes/[id]/itens/[produtoId]/route.ts (DELETE)
+- [x] src/app/api/admin/secoes/[id]/ordem/route.ts (PUT via $transaction)
+- [x] src/components/admin/SecaoPreviaProdutos.tsx
+- [x] src/components/admin/ui/DragList.tsx (up/down buttons)
+- [x] src/components/admin/SecaoCard.tsx (AUTOMATICO + MANUAL + prévia)
+- [x] src/app/admin/categorias/page.tsx (tabela inline editável)
+- [x] src/app/admin/secoes/page.tsx (lista de SecaoCard com reordenação)
 
 ## ⏳ Pendente
-- [ ] src/app/api/admin/categorias/[id]/route.ts
-- [ ] src/app/admin/categorias/page.tsx
-- [ ] src/app/api/admin/secoes/route.ts
-- [ ] src/app/api/admin/secoes/[id]/route.ts
-- [ ] src/app/admin/secoes/page.tsx
-- [ ] Fase 6 — Finalização + Deploy
+
+### Fase 6 — Finalização + Deploy
+- [ ] src/lib/blob.ts (abstração Vercel Blob)
+- [ ] Cache HTTP nas rotas públicas (Cache-Control headers)
+- [ ] next.config.ts: adicionar domínio public.blob.vercel-storage.com
+- [ ] Verificar que nenhum arquivo fora do seed importa de src/mocks/
+- [ ] Smoke test end-to-end de todas as páginas
 
 ## ❌ Bloqueios / Dúvidas
-- A execução dos comandos da Fase 1 (`prisma migrate`, `db seed`) depende da configuração do `DATABASE_URL` pelo usuário.
+- Executar `prisma migrate dev` e `prisma db seed` requer DATABASE_URL configurada pelo usuário.
+- BLOB_READ_WRITE_TOKEN precisa ser configurado no .env.local para upload de imagens funcionar.
