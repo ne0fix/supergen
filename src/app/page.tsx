@@ -1,39 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProdutosViewModel } from '../viewmodels/produtos.vm';
 import ProdutoCard from '../components/ProdutoCard';
 import HeroTexto from '../components/HeroTexto';
 import { ArrowRight, Leaf, ShieldCheck, ThumbsUp, Truck } from 'lucide-react';
-import { mockCategorias } from '../mocks/produtos.mock';
+import { useHomeSecoesViewModel } from '../viewmodels/home.vm';
+import { useCategoriasViewModel } from '../viewmodels/categorias.vm';
 
 export default function HomePage() {
-  const { produtos, carregando } = useProdutosViewModel();
-
-  const ofertas = produtos
-    .filter(p => p.categoria === 'frios-e-embutidos' && (
-      p.nome.toLowerCase().includes('iogurte') ||
-      p.nome.toLowerCase().includes('shake')   ||
-      p.nome.toLowerCase().includes('flan')    ||
-      p.nome.toLowerCase().includes('manteiga') ||
-      p.nome.toLowerCase().includes('margarina')
-    ))
-    .slice(0, 8);
-
-  const frios = produtos
-    .filter(p => p.categoria === 'frios-e-embutidos' && (
-      p.nome.toLowerCase().includes('frango') ||
-      p.nome.toLowerCase().includes('salsicha') ||
-      p.nome.toLowerCase().includes('linguiça') ||
-      p.nome.toLowerCase().includes('miúdos') ||
-      p.nome.toLowerCase().includes('peito') ||
-      p.nome.toLowerCase().includes('hot wings')
-    ))
-    .slice(0, 8);
-
-
+  const { secoes, carregando: carregandoSecoes, erro: erroSecoes } = useHomeSecoesViewModel();
+  const { categorias, carregando: carregandoCategorias, erro: erroCategorias } = useCategoriasViewModel();
 
   return (
     <div className="flex flex-col pb-16">
@@ -88,22 +65,35 @@ export default function HomePage() {
             Ver todas <ArrowRight size={14} />
           </Link>
         </div>
-        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-          {mockCategorias.map(cat => (
-            <Link
-              key={cat.id}
-              href={`/produtos?categoria=${cat.id}`}
-              className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl hover:bg-green-50 transition-all group"
-            >
-              <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-green-100 flex items-center justify-center text-2xl transition-colors shadow-sm">
-                {cat.icone}
+        {carregandoCategorias ? (
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-2 p-1">
+                <div className="w-12 h-12 rounded-full bg-gray-100 animate-pulse" />
+                <div className="h-4 w-10 bg-gray-100 rounded mt-2 animate-pulse" />
               </div>
-              <span className="text-[11px] font-medium text-gray-600 group-hover:text-green-700 text-center leading-tight">
-                {cat.nome}
-              </span>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : erroCategorias ? (
+            <p className="text-red-500 text-center col-span-full">{erroCategorias}</p>
+        ) : (
+          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+            {categorias.map(cat => (
+              <Link
+                key={cat.id}
+                href={`/produtos?categoria=${cat.id}`}
+                className="flex flex-col items-center gap-2 py-3 px-1 rounded-xl hover:bg-green-50 transition-all group"
+              >
+                <div className="w-12 h-12 rounded-full bg-gray-100 group-hover:bg-green-100 flex items-center justify-center text-2xl transition-colors shadow-sm">
+                  {cat.icone}
+                </div>
+                <span className="text-[11px] font-medium text-gray-600 group-hover:text-green-700 text-center leading-tight">
+                  {cat.nome}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── Diferenciais ── */}
@@ -126,32 +116,51 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Ofertas do Dia ── */}
-      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">🔥 Ofertas do Dia</h2>
-            <p className="text-sm text-gray-500 mt-1">Aproveite as melhores ofertas de hoje</p>
-          </div>
-          <Link href="/produtos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
-            Ver todas <ArrowRight size={14} />
-          </Link>
-        </div>
+      {/* ── Dynamic Product Sections ── */}
+      {carregandoSecoes && !erroSecoes && (
+        <>
+          {Array.from({ length: 2 }).map((_, i) => (
+            <section key={i} className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
+              <div className="h-8 w-1/3 bg-gray-200 rounded animate-pulse mb-2" />
+              <div className="h-4 w-1/2 bg-gray-100 rounded animate-pulse mb-5" />
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <div key={j} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+                ))}
+              </div>
+            </section>
+          ))}
+        </>
+      )}
 
-        {carregando ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            ))}
+      {erroSecoes && <p className="text-red-500 text-center py-10">{erroSecoes}</p>}
+
+      {!carregandoSecoes && secoes.map(secao => (
+        <section key={secao.id} className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-2xl font-extrabold text-gray-900">{secao.titulo}</h2>
+              {secao.subtitulo && <p className="text-sm text-gray-500 mt-1">{secao.subtitulo}</p>}
+            </div>
+            <Link 
+              href={`/produtos?${secao.filtroCategoriaId ? `categoria=${secao.filtroCategoriaId}` : (secao.filtroTag ? `tag=${secao.filtroTag}`: '')}`} 
+              className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium"
+            >
+              Ver todos <ArrowRight size={14} />
+            </Link>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {ofertas.map(produto => (
-              <ProdutoCard key={produto.id} produto={produto} />
-            ))}
-          </div>
-        )}
-      </section>
+          {secao.produtos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {secao.produtos.map(produto => (
+                <ProdutoCard key={produto.id} produto={produto} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500">Nenhum produto encontrado para esta seção no momento.</p>
+          )}
+        </section>
+      ))}
+
 
       {/* ── Banners Promo ── */}
       <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
@@ -185,32 +194,6 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
-
-      {/* ── Frios e Embutidos ── */}
-      <section className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">🧀 Frios e Embutidos</h2>
-            <p className="text-sm text-gray-500 mt-1">Frango, salsicha, linguiça e mais</p>
-          </div>
-          <Link href="/produtos?categoria=frios-e-embutidos" className="hidden sm:flex items-center gap-1 text-sm text-green-600 hover:underline font-medium">
-            Ver todos <ArrowRight size={14} />
-          </Link>
-        </div>
-        {carregando ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {frios.map(produto => (
-              <ProdutoCard key={produto.id} produto={produto} />
-            ))}
-          </div>
-        )}
       </section>
 
     </div>

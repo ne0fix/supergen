@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  senhaHash    String
+  nome         String
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model Categoria {
+  id       String    @id
+  nome     String
+  icone    String
+  ordem    Int       @default(0)
+  ativo    Boolean   @default(true)
+  produtos Produto[]
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+model Produto {
+  id               String   @id @default(cuid())
+  nome             String
+  descricao        String   @db.Text
+  preco            Decimal  @db.Decimal(10, 2)
+  precoOriginal    Decimal? @db.Decimal(10, 2)
+  imagem           String
+  quantidadePacote String
+  emEstoque        Boolean  @default(true)
+  avaliacao        Float    @default(0)
+  numAvaliacoes    Int      @default(0)
+  ativo            Boolean  @default(true)
+  categoriaId      String
+  categoria        Categoria  @relation(fields: [categoriaId], references: [id])
+  tags             ProdutoTag[]
+  secaoItems       SecaoItem[]
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+  @@index([categoriaId])
+  @@index([emEstoque])
+  @@index([ativo])
+}
+
+model Tag {
+  id       String       @id
+  label    String
+  produtos ProdutoTag[]
+}
+
+model ProdutoTag {
+  produtoId String
+  tagId     String
+  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id])
+  @@id([produtoId, tagId])
+}
+
+model Secao {
+  id                String      @id @default(cuid())
+  slug              String      @unique
+  titulo            String
+  subtitulo         String?
+  ordem             Int         @default(0)
+  ativo             Boolean     @default(true)
+  maxItens          Int         @default(8)
+  filtroCategoriaId String?
+  filtroTag         String?
+  modoSelecao       ModoSelecao @default(AUTOMATICO)
+  itens             SecaoItem[]
+  criadoEm    DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
+}
+
+enum ModoSelecao {
+  AUTOMATICO
+  MANUAL
+}
+
+model SecaoItem {
+  id        String  @id @default(cuid())
+  secaoId   String
+  produtoId String
+  ordem     Int     @default(0)
+  secao     Secao   @relation(fields: [secaoId], references: [id], onDelete: Cascade)
+  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  @@unique([secaoId, produtoId])
+  @@index([secaoId])
+}

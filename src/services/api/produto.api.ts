@@ -1,28 +1,40 @@
 import { Produto, Categoria } from '../../models/produto.model';
-import { mockProdutos, mockCategorias } from '../../mocks/produtos.mock';
 
-// Simulating network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const API_BASE_URL = '/api';
+
+async function fetchAPI<T>(endpoint: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`);
+  if (!response.ok) {
+    throw new Error(`A chamada à API falhou: ${response.statusText}`);
+  }
+  return response.json();
+}
 
 export const ProdutoAPI = {
-  async listarProdutos(): Promise<Produto[]> {
-    return [...mockProdutos];
+  async listarProdutos(params?: { categoria?: string; tag?: string; emEstoque?: boolean }): Promise<Produto[]> {
+    const searchParams = new URLSearchParams();
+    if (params?.categoria) searchParams.set('categoria', params.categoria);
+    if (params?.tag) searchParams.set('tag', params.tag);
+    if (params?.emEstoque !== undefined) searchParams.set('emEstoque', String(params.emEstoque));
+    
+    const queryString = searchParams.toString();
+    return fetchAPI<Produto[]>(`/produtos${queryString ? `?${queryString}` : ''}`);
   },
   
   async obterProduto(id: string): Promise<Produto | null> {
-    const produto = mockProdutos.find(p => p.id === id);
-    return produto || null;
+    try {
+      return await fetchAPI<Produto>(`/produtos/${id}`);
+    } catch (error) {
+      console.error(`Erro ao obter produto ${id}:`, error);
+      return null;
+    }
   },
 
   async listarCategorias(): Promise<Categoria[]> {
-    return [...mockCategorias];
+    return fetchAPI<Categoria[]>('/categorias');
   },
 
   async buscarProdutos(query: string): Promise<Produto[]> {
-    const lowerQuery = query.toLowerCase();
-    return mockProdutos.filter(p => 
-      p.nome.toLowerCase().includes(lowerQuery) || 
-      p.descricao.toLowerCase().includes(lowerQuery)
-    );
+    return fetchAPI<Produto[]>(`/produtos?q=${encodeURIComponent(query)}`);
   }
 };

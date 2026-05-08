@@ -1,0 +1,6 @@
+{
+  "name": "Ekomart",
+  "description": "E-commerce grocery application built with Next.js and Clean Architecture MVVM.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
