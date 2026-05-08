@@ -124,7 +124,9 @@ function ProdutosContent() {
           <div className="relative w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
             <Image src={row.imagem} alt={row.nome} fill sizes="40px" className="object-contain p-0.5" onError={() => {}} />
           </div>
-          <span className="font-medium text-sm text-gray-900 line-clamp-2">{row.nome}</span>
+          <Link href={`/admin/produtos/${row.id}`} className="font-medium text-sm text-gray-900 hover:text-green-700 line-clamp-2">
+            {row.nome}
+          </Link>
         </div>
       ),
     },
@@ -151,6 +153,19 @@ function ProdutosContent() {
       cell: (value, row) => (
         <Toggle label="" checked={value as boolean} onChange={(checked) => toggleEstoque(row.id, checked)} />
       ),
+    },
+    {
+      header: 'Tags',
+      accessor: 'tags',
+      cell: (value) => {
+        const tags = value as string[];
+        if (!tags?.length) return <span className="text-gray-300 text-xs">—</span>;
+        return (
+          <div className="flex flex-wrap gap-1">
+            {tags.map((t) => <Badge key={t} label={t} variant="tag" />)}
+          </div>
+        );
+      },
     },
     {
       header: 'Ações',

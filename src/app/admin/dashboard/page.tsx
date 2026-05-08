@@ -1,6 +1,7 @@
+import Link from 'next/link';
 import prisma from '@/src/lib/prisma';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { Package, XCircle, Tag, LayoutList } from 'lucide-react';
+import { Package, XCircle, Tag, LayoutList, ExternalLink, ArrowRight } from 'lucide-react';
 
 
 async function getDashboardData() {
@@ -49,6 +50,39 @@ export default async function DashboardPage() {
                         </div>
                     </div>
                 ))}
+            </div>
+
+            {/* Links Rápidos */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <h2 className="text-lg font-semibold mb-4">Links Rápidos</h2>
+                <div className="flex flex-wrap gap-3">
+                    <a
+                        href="/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-green-300 hover:text-green-700 transition-colors"
+                    >
+                        <ExternalLink size={15} /> Ver site
+                    </a>
+                    <Link
+                        href="/admin/produtos"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-green-300 hover:text-green-700 transition-colors"
+                    >
+                        <ArrowRight size={15} /> Ir para Produtos
+                    </Link>
+                    <Link
+                        href="/admin/secoes"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-green-300 hover:text-green-700 transition-colors"
+                    >
+                        <ArrowRight size={15} /> Configurar Seções
+                    </Link>
+                    <Link
+                        href="/admin/produtos/novo"
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-sm font-bold text-white hover:bg-green-700 transition-colors"
+                    >
+                        <Package size={15} /> Novo Produto
+                    </Link>
+                </div>
             </div>
 
             {/* Recent Products Table */}
