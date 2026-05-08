@@ -12,7 +12,15 @@ import { mockCategorias } from '../mocks/produtos.mock';
 export default function HomePage() {
   const { produtos, carregando } = useProdutosViewModel();
 
-  const ofertas = produtos.filter(p => p.tags.includes('desconto')).slice(0, 8);
+  const ofertas = produtos
+    .filter(p => p.categoria === 'frios-e-embutidos' && (
+      p.nome.toLowerCase().includes('iogurte') ||
+      p.nome.toLowerCase().includes('shake')   ||
+      p.nome.toLowerCase().includes('flan')    ||
+      p.nome.toLowerCase().includes('manteiga') ||
+      p.nome.toLowerCase().includes('margarina')
+    ))
+    .slice(0, 8);
 
   const laticinios = produtos
     .filter(p => p.categoria === 'frios-e-embutidos' && (
