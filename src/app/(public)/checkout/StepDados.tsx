@@ -6,6 +6,39 @@ import { DadosComprador, DadosEntrega, FreteResponse } from '@/src/models/checko
 import { validarCPF, formatarCPF, formatarTelefone } from '@/src/utils/validators';
 import { formatarMoeda } from '@/src/utils/formatadores';
 
+// ─── Componente de campo extraído fora do StepDados ──────────────────────────
+// IMPORTANTE: nunca definir componentes dentro de outros componentes —
+// causa recriação a cada render e perda de foco nos inputs.
+interface CampoProps {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  erro?: string;
+  maxLength?: number;
+}
+
+function Campo({ label, value, onChange, type = 'text', placeholder = '', erro = '', maxLength }: CampoProps) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-gray-700 mb-1">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        maxLength={maxLength}
+        className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors
+          ${erro ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-green-500'}`}
+      />
+      {erro && <p className="text-xs text-red-500 mt-1">{erro}</p>}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface Props {
   metodo: 'PIX' | 'CARTAO';
   subtotal: number;
@@ -19,27 +52,20 @@ interface Props {
 export default function StepDados({
   metodo, subtotal, inicialComprador, inicialEntrega, inicialFrete, onBack, onNext,
 }: Props) {
-  // ── Dados pessoais ────────────────────────────────────────────────────────
-  const [nome, setNome]       = useState(inicialComprador?.nome      ?? '');
-  const [email, setEmail]     = useState(inicialComprador?.email     ?? '');
-  const [telefone, setTelefone] = useState(inicialComprador?.telefone ?? '');
-  const [cpf, setCpf]         = useState(inicialComprador?.cpf       ?? '');
-
-  // ── Entrega ───────────────────────────────────────────────────────────────
-  const [tipoEntrega, setTipoEntrega] = useState<'ENTREGA' | 'RETIRADA'>(
-    inicialEntrega?.tipo ?? 'ENTREGA'
-  );
-  const [cep, setCep]               = useState(inicialEntrega?.cep     ?? '');
-  const [numero, setNumero]         = useState(inicialEntrega?.numero  ?? '');
+  const [nome,        setNome]       = useState(inicialComprador?.nome      ?? '');
+  const [email,       setEmail]      = useState(inicialComprador?.email     ?? '');
+  const [telefone,    setTelefone]   = useState(inicialComprador?.telefone  ?? '');
+  const [cpf,         setCpf]        = useState(inicialComprador?.cpf       ?? '');
+  const [tipoEntrega, setTipoEntrega] = useState<'ENTREGA' | 'RETIRADA'>(inicialEntrega?.tipo ?? 'ENTREGA');
+  const [cep,         setCep]        = useState(inicialEntrega?.cep         ?? '');
+  const [numero,      setNumero]     = useState(inicialEntrega?.numero      ?? '');
   const [complemento, setComplemento] = useState(inicialEntrega?.complemento ?? '');
-  const [dadosCep, setDadosCep]     = useState<FreteResponse | null>(null);
-  const [buscando, setBuscando]     = useState(false);
-  const [frete, setFrete]           = useState(inicialFrete);
+  const [dadosCep,    setDadosCep]   = useState<FreteResponse | null>(null);
+  const [buscando,    setBuscando]   = useState(false);
+  const [frete,       setFrete]      = useState(inicialFrete);
+  const [erros,       setErros]      = useState<Record<string, string>>({});
 
-  // ── Erros ─────────────────────────────────────────────────────────────────
-  const [erros, setErros] = useState<Record<string, string>>({});
-
-  // ── CEP ───────────────────────────────────────────────────────────────────
+  // ── CEP ────────────────────────────────────────────────────────────────────
   const formatCep = (v: string) => {
     const d = v.replace(/\D/g, '').slice(0, 8);
     return d.length > 5 ? d.replace(/(\d{5})(\d)/, '$1-$2') : d;
@@ -52,7 +78,7 @@ export default function StepDados({
     setErros(e => ({ ...e, cep: '' }));
     try {
       const res = await fetch(`/api/frete/calcular?cep=${limpo}&subtotal=${subtotal}`);
-      if (!res.ok) throw new Error('CEP não encontrado');
+      if (!res.ok) throw new Error();
       const data: FreteResponse = await res.json();
       setDadosCep(data);
       setFrete(data.frete);
@@ -64,31 +90,31 @@ export default function StepDados({
     }
   };
 
-  // ── Validação ─────────────────────────────────────────────────────────────
+  // ── Validação ───────────────────────────────────────────────────────────────
   const validar = () => {
     const e: Record<string, string> = {};
-    if (!nome.trim() || nome.trim().length < 3)   e.nome     = 'Nome completo obrigatório';
+    if (!nome.trim() || nome.trim().length < 3)    e.nome     = 'Nome completo obrigatório';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email    = 'E-mail inválido';
     if (telefone.replace(/\D/g, '').length < 10)   e.telefone = 'Telefone inválido';
-    if (!validarCPF(cpf.replace(/\D/g, '')))         e.cpf      = 'CPF inválido';
+    if (!validarCPF(cpf.replace(/\D/g, '')))       e.cpf      = 'CPF inválido';
     if (tipoEntrega === 'ENTREGA') {
-      if (!dadosCep)                                e.cep      = 'Consulte o CEP primeiro';
-      if (!numero.trim())                           e.numero   = 'Número obrigatório';
+      if (!dadosCep)       e.cep    = 'Consulte o CEP primeiro';
+      if (!numero.trim())  e.numero = 'Número obrigatório';
     }
     setErros(e);
     return Object.keys(e).length === 0;
   };
 
-  // ── Submit ────────────────────────────────────────────────────────────────
+  // ── Submit ──────────────────────────────────────────────────────────────────
   const handleSubmit = (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!validar()) return;
 
     const comprador: DadosComprador = {
-      nome:      nome.trim(),
-      email:     email.trim().toLowerCase(),
-      telefone:  telefone.replace(/\D/g, ''),
-      cpf:       cpf.replace(/\D/g, ''),
+      nome:     nome.trim(),
+      email:    email.trim().toLowerCase(),
+      telefone: telefone.replace(/\D/g, ''),
+      cpf:      cpf.replace(/\D/g, ''),
     };
 
     const entrega: DadosEntrega = tipoEntrega === 'RETIRADA'
@@ -107,27 +133,6 @@ export default function StepDados({
     onNext(comprador, entrega, tipoEntrega === 'RETIRADA' ? 0 : frete);
   };
 
-  // ── Campo genérico ────────────────────────────────────────────────────────
-  const Campo = ({
-    label, value, onChange, type = 'text', placeholder = '', erro = '',
-  }: {
-    label: string; value: string; onChange: (v: string) => void;
-    type?: string; placeholder?: string; erro?: string;
-  }) => (
-    <div>
-      <label className="block text-sm font-bold text-gray-700 mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className={`w-full border rounded-xl px-4 py-3 text-sm outline-none transition-colors
-          ${erro ? 'border-red-400 focus:border-red-500' : 'border-gray-300 focus:border-green-500'}`}
-      />
-      {erro && <p className="text-xs text-red-500 mt-1">{erro}</p>}
-    </div>
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
 
@@ -142,6 +147,7 @@ export default function StepDados({
           placeholder="João da Silva"
           erro={erros.nome}
         />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Campo
             label="Telefone / WhatsApp"
@@ -173,6 +179,7 @@ export default function StepDados({
           }}
           placeholder="000.000.000-00"
           erro={erros.cpf}
+          maxLength={14}
         />
       </div>
 
@@ -214,6 +221,7 @@ export default function StepDados({
                     if (v.replace(/\D/g, '').length === 8) buscarCep(v);
                   }}
                   placeholder="00000-000"
+                  maxLength={9}
                   className={`flex-1 border rounded-xl px-4 py-3 text-sm outline-none transition-colors
                     ${erros.cep ? 'border-red-400' : 'border-gray-300 focus:border-green-500'}`}
                 />
