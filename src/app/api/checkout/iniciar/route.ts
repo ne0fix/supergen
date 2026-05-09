@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       status: 'PENDING_PAYMENT',
       compradorNome: comprador.nome,
       compradorEmail: comprador.email,
-      compradorCpf: comprador.cpf,
+      compradorCpf: comprador.cpf ?? '',
       compradorTelefone: comprador.telefone,
       entregaTipo: entrega.tipo,
       cep: entrega.cep,
