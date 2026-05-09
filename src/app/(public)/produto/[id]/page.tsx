@@ -7,7 +7,7 @@ import { useProdutoDetailViewModel, useProdutosRelacionados } from '@/src/viewmo
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import ProdutoCard from '@/src/components/ProdutoCard';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { ChevronRight, Heart, Minus, Plus, Share2, Star } from 'lucide-react';
+import { ChevronRight, Heart, Minus, Plus, Share2, Star, ShoppingCart } from 'lucide-react';
 import { ProdutoDetailSkeleton } from '@/src/components/ui/Skeleton';
 
 export default function ProdutoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -131,12 +131,13 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
             {produto.emEstoque ? (
               <button
                 onClick={() => adicionarItem(produto, quantidadeSelecionada)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md shadow-green-600/25 transition-all px-4"
+                className="flex-1 h-14 sm:h-12 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white rounded-xl font-bold text-base flex items-center justify-center gap-3 shadow-lg shadow-green-600/25 transition-all px-4"
               >
+                <ShoppingCart size={20} />
                 Adicionar ao Carrinho
               </button>
             ) : (
-              <div className="w-full h-12 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
+              <div className="w-full h-14 sm:h-12 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
                 <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
                 Produto Esgotado
               </div>
