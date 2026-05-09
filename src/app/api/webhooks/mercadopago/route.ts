@@ -75,13 +75,15 @@ export async function POST(req: NextRequest) {
 
   const mpPaymentId = String(notification.data.id);
 
-  // Consultar status real no MP (não confiar no payload do webhook)
+  // Consultar status real no MP (nunca confiar no payload do webhook)
   let pagamento: Awaited<ReturnType<typeof mpPayment.get>>;
   try {
     pagamento = await mpPayment.get({ id: mpPaymentId });
   } catch (err) {
-    console.error('Erro ao consultar MP:', err);
-    return NextResponse.json({ error: 'Erro ao consultar pagamento' }, { status: 502 });
+    // ID inválido (ex: teste do painel) ou MP instável — retorna 200 para
+    // evitar reenvios infinitos. MP retenta automaticamente em caso de 5xx.
+    console.warn('[webhook] Pagamento não encontrado no MP:', mpPaymentId, err);
+    return NextResponse.json({ received: true });
   }
 
   const orderId = pagamento.external_reference;
