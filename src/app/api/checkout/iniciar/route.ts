@@ -225,12 +225,23 @@ export async function POST(req: NextRequest) {
       });
     }
   } catch (mpError: unknown) {
-    // Marcar order como FAILED em caso de erro na API do MP
     await prisma.order.update({
       where: { id: order.id },
       data: { status: 'FAILED' },
     });
-    console.error('Mercado Pago error:', mpError);
-    return NextResponse.json({ error: 'Erro ao processar pagamento. Tente novamente.' }, { status: 502 });
+
+    // Traduzir erros conhecidos do MP em mensagens amigáveis
+    const causes = (mpError as { cause?: Array<{ code: number; description: string }> })?.cause ?? [];
+    const code = causes[0]?.code;
+    console.error('Mercado Pago error:', JSON.stringify(causes));
+
+    const mensagem =
+      code === 13253 ? 'CPF inválido ou não cadastrado. Verifique o CPF informado e tente novamente.' :
+      code === 2001  ? 'E-mail do pagador inválido.' :
+      code === 324   ? 'Token do cartão inválido ou expirado. Preencha os dados do cartão novamente.' :
+      code === 3034  ? 'Bandeira do cartão não suportada.' :
+      'Erro ao processar pagamento. Verifique os dados e tente novamente.';
+
+    return NextResponse.json({ error: mensagem }, { status: 502 });
   }
 }
