@@ -70,9 +70,7 @@ export default function StepDados({
     if (!nome.trim() || nome.trim().length < 3)   e.nome     = 'Nome completo obrigatório';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email    = 'E-mail inválido';
     if (telefone.replace(/\D/g, '').length < 10)   e.telefone = 'Telefone inválido';
-    if (metodo === 'CARTAO') {
-      if (!validarCPF(cpf.replace(/\D/g, '')))     e.cpf      = 'CPF inválido';
-    }
+    if (!validarCPF(cpf.replace(/\D/g, '')))         e.cpf      = 'CPF inválido';
     if (tipoEntrega === 'ENTREGA') {
       if (!dadosCep)                                e.cep      = 'Consulte o CEP primeiro';
       if (!numero.trim())                           e.numero   = 'Número obrigatório';
@@ -90,7 +88,7 @@ export default function StepDados({
       nome:      nome.trim(),
       email:     email.trim().toLowerCase(),
       telefone:  telefone.replace(/\D/g, ''),
-      cpf:       metodo === 'CARTAO' ? cpf.replace(/\D/g, '') : undefined,
+      cpf:       cpf.replace(/\D/g, ''),
     };
 
     const entrega: DadosEntrega = tipoEntrega === 'RETIRADA'
@@ -166,19 +164,16 @@ export default function StepDados({
           />
         </div>
 
-        {/* CPF — somente cartão */}
-        {metodo === 'CARTAO' && (
-          <Campo
-            label="CPF do titular do cartão"
-            value={cpf}
-            onChange={v => {
-              setCpf(formatarCPF(v));
-              setErros(e => ({ ...e, cpf: '' }));
-            }}
-            placeholder="000.000.000-00"
-            erro={erros.cpf}
-          />
-        )}
+        <Campo
+          label={metodo === 'CARTAO' ? 'CPF do titular do cartão' : 'CPF'}
+          value={cpf}
+          onChange={v => {
+            setCpf(formatarCPF(v));
+            setErros(e => ({ ...e, cpf: '' }));
+          }}
+          placeholder="000.000.000-00"
+          erro={erros.cpf}
+        />
       </div>
 
       {/* Entrega */}

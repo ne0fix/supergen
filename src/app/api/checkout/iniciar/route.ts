@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!itens?.length) return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 });
   if (!comprador?.email || !comprador?.nome) return NextResponse.json({ error: 'Dados do comprador inválidos' }, { status: 400 });
   if (metodo === 'CARTAO' && !cardToken) return NextResponse.json({ error: 'Token do cartão ausente' }, { status: 400 });
-  if (metodo === 'CARTAO' && !comprador?.cpf) return NextResponse.json({ error: 'CPF obrigatório para pagamento com cartão' }, { status: 400 });
+  if (!comprador?.cpf) return NextResponse.json({ error: 'CPF obrigatório' }, { status: 400 });
 
   // ─── Buscar produtos do banco (NUNCA confiar no preço do frontend) ────────
   const produtoIds = itens.map(i => i.produtoId);
@@ -150,11 +150,10 @@ export async function POST(req: NextRequest) {
           date_of_expiration: expiresAt,
           notification_url:   notificationUrl,
           payer: {
-            email:      comprador.email,
-            first_name: firstName,
-            last_name:  lastName,
-            // CPF é opcional no PIX — omitido para não causar erro de identidade
-            ...(comprador.cpf ? { identification: { type: 'CPF', number: comprador.cpf } } : {}),
+            email:          comprador.email,
+            first_name:     firstName,
+            last_name:      lastName,
+            identification: { type: 'CPF', number: comprador.cpf },
           },
           additional_info: additionalInfo,
         },

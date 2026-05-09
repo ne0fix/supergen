@@ -33,7 +33,7 @@ export default function StepMetodo({ onNext }: Props) {
           <div className="flex items-center gap-1.5 text-xs text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full">
             <Zap size={11} /> Aprovação imediata
           </div>
-          <p className="text-[11px] text-gray-400">Sem dados de cartão necessários</p>
+          <p className="text-[11px] text-gray-400">Gera um código QR para pagar</p>
         </button>
 
         {/* Cartão */}
