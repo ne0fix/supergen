@@ -116,25 +116,28 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           <p className="text-gray-600 text-sm sm:text-base mb-6 leading-relaxed">{produto.descricao}</p>
 
           {/* Quantidade + Carrinho */}
-          <div className="flex gap-3 mb-6">
-            <div className={`flex items-center border rounded-xl overflow-hidden h-12 w-32 bg-white flex-shrink-0 ${produto.emEstoque ? 'border-gray-300' : 'border-gray-200 opacity-40 pointer-events-none'}`}>
-              <button onClick={decrementarQuantidade} disabled={!produto.emEstoque} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors disabled:cursor-not-allowed">
-                <Minus size={16} />
-              </button>
-              <span className="flex-1 text-center font-bold text-gray-800">{quantidadeSelecionada}</span>
-              <button onClick={incrementarQuantidade} disabled={!produto.emEstoque} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors disabled:cursor-not-allowed">
-                <Plus size={16} />
-              </button>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            {produto.emEstoque && (
+              <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden h-12 w-full sm:w-32 bg-white flex-shrink-0">
+                <button onClick={decrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+                  <Minus size={16} />
+                </button>
+                <span className="flex-1 text-center font-bold text-gray-800">{quantidadeSelecionada}</span>
+                <button onClick={incrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+                  <Plus size={16} />
+                </button>
+              </div>
+            )}
             {produto.emEstoque ? (
               <button
                 onClick={() => adicionarItem(produto, quantidadeSelecionada)}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md shadow-green-600/25 transition-all"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 shadow-md shadow-green-600/25 transition-all px-4"
               >
                 Adicionar ao Carrinho
               </button>
             ) : (
-              <div className="flex-1 bg-gray-100 text-gray-400 h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 cursor-not-allowed select-none">
+              <div className="w-full h-12 bg-gray-100 border border-gray-200 text-gray-400 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 cursor-not-allowed select-none">
+                <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" />
                 Produto Esgotado
               </div>
             )}
