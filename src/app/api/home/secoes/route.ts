@@ -64,7 +64,7 @@ export async function GET() {
     );
 
     return NextResponse.json(secoesHomeDTO, {
-      headers: { 'Cache-Control': 's-maxage=60, stale-while-revalidate=300' },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     console.error('Erro ao buscar seções da home:', error);

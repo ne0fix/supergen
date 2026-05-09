@@ -20,7 +20,7 @@ export async function GET(
     if (!produto) return new NextResponse('Produto não encontrado', { status: 404 });
 
     return NextResponse.json(produtoToDTO(produto), {
-      headers: { 'Cache-Control': 's-maxage=10, stale-while-revalidate=30' },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     console.error('Erro ao buscar produto:', error);

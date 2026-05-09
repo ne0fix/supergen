@@ -38,6 +38,13 @@ function ProdutosContent() {
     carregar(categoriaSelecionada);
   }, [categoriaSelecionada, carregar]);
 
+  // Re-busca ao retornar para a aba (captura mudanças de estoque feitas pelo admin)
+  useEffect(() => {
+    const onFocus = () => carregar(categoriaSelecionada);
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [categoriaSelecionada, carregar]);
+
   const selecionarCategoria = (id: string | null) => {
     const params = new URLSearchParams(searchParams.toString());
     if (id) params.set('categoria', id);

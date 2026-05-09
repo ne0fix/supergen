@@ -25,6 +25,7 @@ export function useCarrinhoViewModel() {
   const total = subtotal + frete + impostos;
 
   const adicionarItem = (produto: Produto, quantidade: number = 1) => {
+    if (!produto.emEstoque) return; // bloqueia produto esgotado
     const existe = carrinhoGlobal.find(i => i.produto.id === produto.id);
     if (existe) {
       existe.quantidade += quantidade;

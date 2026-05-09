@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     const produtosDTO = produtos.map(produtoToDTO);
 
     return NextResponse.json(produtosDTO, {
-      headers: { 'Cache-Control': 's-maxage=10, stale-while-revalidate=30' },
+      headers: { 'Cache-Control': 'no-store' },
     });
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);
