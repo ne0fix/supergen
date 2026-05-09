@@ -105,9 +105,16 @@ export default function ProdutoCard({ produto, horizontal = false }: Props) {
               alt={produto.nome}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+              className={`object-contain p-4 transition-transform duration-500 ${produto.emEstoque ? 'group-hover:scale-105' : 'opacity-40'}`}
               onError={() => setImgError(true)}
             />
+          )}
+          {!produto.emEstoque && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="bg-gray-800/80 text-white text-xs font-bold px-3 py-1.5 rounded-full tracking-wide">
+                Esgotado
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -129,15 +136,23 @@ export default function ProdutoCard({ produto, horizontal = false }: Props) {
             {produto.precoOriginal && (
               <span className="text-xs text-gray-400 line-through leading-none">{formatarMoeda(produto.precoOriginal)}</span>
             )}
-            <span className="text-lg font-extrabold text-green-600 leading-tight">{formatarMoeda(produto.preco)}</span>
+            <span className={`text-lg font-extrabold leading-tight ${produto.emEstoque ? 'text-green-600' : 'text-gray-400'}`}>
+              {formatarMoeda(produto.preco)}
+            </span>
           </div>
-          <button
-            onClick={handleAddCart}
-            className="w-10 h-10 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
-            aria-label="Adicionar ao carrinho"
-          >
-            <ShoppingCart size={18} />
-          </button>
+          {produto.emEstoque ? (
+            <button
+              onClick={handleAddCart}
+              className="w-10 h-10 bg-green-50 hover:bg-green-600 text-green-600 hover:text-white rounded-full flex items-center justify-center transition-colors shadow-sm"
+              aria-label="Adicionar ao carrinho"
+            >
+              <ShoppingCart size={18} />
+            </button>
+          ) : (
+            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center" title="Indisponível">
+              <ShoppingCart size={18} className="text-gray-300" />
+            </div>
+          )}
         </div>
       </div>
     </Link>

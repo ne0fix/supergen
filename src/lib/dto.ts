@@ -17,7 +17,9 @@ export interface ProdutoPublicoDTO {
   preco: number;
   precoOriginal: number | null;
   imagem: string;
+  imagens: string[];
   categoria: string;
+  categoriaId: string;
   quantidadePacote: string;
   emEstoque: boolean;
   avaliacao: number;
@@ -85,7 +87,9 @@ export function produtoToDTO(produto: PrismaProdutoCompleto): ProdutoPublicoDTO 
     preco: produto.preco.toNumber(),
     precoOriginal: produto.precoOriginal?.toNumber() ?? null,
     imagem: produto.imagem,
+    imagens: produto.imagens,
     categoria: produto.categoria.nome,
+    categoriaId: produto.categoriaId,
     quantidadePacote: produto.quantidadePacote,
     emEstoque: produto.emEstoque,
     avaliacao: produto.avaliacao,

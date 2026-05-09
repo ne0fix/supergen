@@ -4,6 +4,27 @@ import prisma from '@/src/lib/prisma';
 
 const AddItemSchema = z.object({ produtoId: z.string().min(1) });
 
+// DELETE /api/admin/secoes/[id]/itens?produtoId=xxx
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id: secaoId } = await params;
+    const produtoId = req.nextUrl.searchParams.get('produtoId');
+
+    if (!produtoId) {
+      return NextResponse.json({ error: 'produtoId é obrigatório.' }, { status: 400 });
+    }
+
+    await prisma.secaoItem.delete({
+      where: { secaoId_produtoId: { secaoId, produtoId } },
+    });
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error('Erro ao remover item da seção:', error);
+    return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
 // POST /api/admin/secoes/[id]/itens
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

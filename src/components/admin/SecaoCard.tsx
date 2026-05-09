@@ -135,7 +135,7 @@ export default function SecaoCard({
   }
 
   async function handleRemoverProduto(produtoId: string) {
-    await fetch(`/api/admin/secoes/${secao.id}/itens/${produtoId}`, { method: 'DELETE' });
+    await fetch(`/api/admin/secoes/${secao.id}/itens?produtoId=${produtoId}`, { method: 'DELETE' });
     const novosItens = itens.filter((i) => i.produtoId !== produtoId);
     setItens(novosItens);
     setPrevia(novosItens.map((i) => i.produto).slice(0, dados.maxItens));

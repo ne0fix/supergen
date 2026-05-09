@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { Mail, Lock, AlertCircle, Loader2, ShieldCheck } from 'lucide-react';
 import { LoginSchema, LoginFormData } from '@/src/utils/validators';
 
 export default function LoginPage() {
@@ -23,71 +24,132 @@ export default function LoginPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-
       if (!response.ok) {
-        const errorText = await response.text();
-        // Use the text from the response, or a default message
-        throw new Error(errorText || 'Credenciais inválidas ou erro no servidor.');
+        const text = await response.text();
+        throw new Error(text || 'Credenciais inválidas.');
       }
-
-      // On successful login, redirect to the dashboard
       router.push('/admin/dashboard');
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Ocorreu um erro ao tentar fazer login.';
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : 'Erro ao conectar ao servidor.');
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
-        <div className="flex justify-center mb-8">
-          <Image src="/gn.png" alt="Ekomart Logo" width={150} height={71} priority />
+    <div className="min-h-screen flex">
+      {/* Painel esquerdo — visual */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 flex-col justify-between p-12 relative overflow-hidden">
+        {/* Círculos decorativos */}
+        <div className="absolute -top-24 -left-24 w-96 h-96 bg-white/5 rounded-full" />
+        <div className="absolute -bottom-32 -right-16 w-[500px] h-[500px] bg-white/5 rounded-full" />
+        <div className="absolute top-1/2 left-1/4 w-48 h-48 bg-green-500/10 rounded-full blur-2xl" />
+
+        <div className="relative z-10">
+          <Image src="/gn2.png" alt="Ekomart" width={160} height={76} style={{ height: 'auto' }} className="drop-shadow-lg" />
         </div>
-        <h2 className="text-2xl font-bold text-center text-gray-900 mb-2">Acesso Admin</h2>
-        <p className="text-center text-sm text-gray-500 mb-8">
-          Use suas credenciais para acessar o painel.
-        </p>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              {...register('email')}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-            />
-            {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email.message}</p>}
+
+        <div className="relative z-10 space-y-6">
+          <blockquote className="text-white/90 text-2xl font-light leading-relaxed">
+            "Gerencie seu supermercado com facilidade, controle e agilidade."
+          </blockquote>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-sm">
+              GN
+            </div>
+            <div>
+              <p className="text-white font-semibold text-sm">Painel Administrativo</p>
+              <p className="text-green-300 text-xs">Super G & N · Pacatuba, CE</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex items-center gap-2 text-green-300 text-xs">
+          <ShieldCheck size={14} />
+          <span>Acesso restrito a administradores autorizados</span>
+        </div>
+      </div>
+
+      {/* Painel direito — formulário */}
+      <div className="flex-1 flex items-center justify-center bg-gray-50 p-8">
+        <div className="w-full max-w-md">
+          {/* Logo mobile */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <Image src="/gn2.png" alt="Ekomart" width={140} height={67} style={{ height: 'auto' }} />
           </div>
 
-          <div>
-            <label htmlFor="senha" className="block text-sm font-medium text-gray-700">
-              Senha
-            </label>
-            <input
-              id="senha"
-              type="password"
-              {...register('senha')}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-            />
-            {errors.senha && <p className="mt-2 text-sm text-red-600">{errors.senha.message}</p>}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Bem-vindo</h1>
+            <p className="text-gray-500 mt-1">Entre com suas credenciais de administrador</p>
           </div>
 
-          {error && <p className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-md">{error}</p>}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                E-mail
+              </label>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  {...register('email')}
+                  placeholder="admin@exemplo.com"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <AlertCircle size={12} /> {errors.email.message}
+                </p>
+              )}
+            </div>
 
-          <div>
+            {/* Senha */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Senha
+              </label>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="password"
+                  {...register('senha')}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-all"
+                />
+              </div>
+              {errors.senha && (
+                <p className="mt-1.5 text-xs text-red-500 flex items-center gap-1">
+                  <AlertCircle size={12} /> {errors.senha.message}
+                </p>
+              )}
+            </div>
+
+            {/* Erro geral */}
+            {error && (
+              <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-xl">
+                <AlertCircle size={16} className="flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Botão */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-green-600/25 hover:shadow-green-600/40 hover:-translate-y-0.5"
             >
-              {isSubmitting ? 'Entrando...' : 'Entrar'}
+              {isSubmitting ? (
+                <><Loader2 size={16} className="animate-spin" /> Entrando...</>
+              ) : (
+                'Entrar no Painel'
+              )}
             </button>
-          </div>
-        </form>
+          </form>
+
+          <p className="text-center text-xs text-gray-400 mt-8">
+            © {new Date().getFullYear()} Super G & N · Todos os direitos reservados
+          </p>
+        </div>
       </div>
     </div>
   );

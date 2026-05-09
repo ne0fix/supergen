@@ -7,6 +7,7 @@ import HeroTexto from '@/src/components/HeroTexto';
 import { ArrowRight, Leaf, ShieldCheck, ThumbsUp, Truck } from 'lucide-react';
 import { useHomeSecoesViewModel } from '@/src/viewmodels/home.vm';
 import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
+import { ProdutoCardSkeleton, Skeleton } from '@/src/components/ui/Skeleton';
 
 export default function HomePage() {
   const { secoes, carregando: carregandoSecoes, erro: erroSecoes } = useHomeSecoesViewModel();
@@ -29,11 +30,11 @@ export default function HomePage() {
         <div className="relative z-10 container mx-auto px-4 max-w-7xl pt-4 pb-16 sm:py-16">
           <div className="max-w-xl">
             <Image
-              src="/gn.png"
+              src="/gn2.png"
               alt="Ekomart"
               width={499}
               height={241}
-              className="h-15 w-auto mt-5 mb-10 sm:hidden"
+              className="h-15 w-auto mt-5 mb-10 sm:hidden drop-shadow-lg"
             />
             <span className="hidden sm:inline-block bg-green-500 text-white text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-5">
               🔥 Ofertas da Semana
@@ -121,11 +122,11 @@ export default function HomePage() {
         <>
           {Array.from({ length: 2 }).map((_, i) => (
             <section key={i} className="container mx-auto px-4 max-w-7xl mt-8 sm:mt-12">
-              <div className="h-8 w-1/3 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="h-4 w-1/2 bg-gray-100 rounded animate-pulse mb-5" />
+              <Skeleton className="h-7 w-48 mb-2" />
+              <Skeleton className="h-4 w-64 mb-5" />
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {Array.from({ length: 4 }).map((_, j) => (
-                  <div key={j} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+                  <ProdutoCardSkeleton key={j} />
                 ))}
               </div>
             </section>

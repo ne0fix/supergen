@@ -2,6 +2,22 @@ import { useState, useEffect, useCallback } from 'react';
 import { Produto } from '../models/produto.model';
 import { ProdutoAPI } from '../services/api/produto.api';
 
+export function useProdutosRelacionados(categoriaId: string | undefined, excludeId: string | undefined) {
+  const [produtos, setProdutos] = useState<Produto[]>([]);
+  const [carregando, setCarregando] = useState(false);
+
+  useEffect(() => {
+    if (!categoriaId || !excludeId) return;
+    setCarregando(true);
+    ProdutoAPI.listarRelacionados(categoriaId, excludeId, 5)
+      .then(setProdutos)
+      .catch(() => setProdutos([]))
+      .finally(() => setCarregando(false));
+  }, [categoriaId, excludeId]);
+
+  return { produtos, carregando };
+}
+
 export function useProdutosViewModel() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);

@@ -5,7 +5,9 @@ export interface Produto {
   preco: number;
   precoOriginal?: number | null;
   imagem: string;
+  imagens?: string[];
   categoria: string;
+  categoriaId?: string;
   subcategoria?: string;
   emEstoque: boolean;
   quantidadePacote: string; // ex: "500g", "Pack of 3"

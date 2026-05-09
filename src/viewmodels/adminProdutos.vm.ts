@@ -26,11 +26,12 @@ export function useAdminProdutos(): UseAdminProdutosReturn {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const searchParamsStr = searchParams.toString();
+
     const fetchProdutos = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams(searchParams.toString());
-            const response = await fetch(`/api/admin/produtos?${params.toString()}`);
+            const response = await fetch(`/api/admin/produtos?${searchParamsStr}`);
             if (!response.ok) {
                 throw new Error('Falha ao buscar produtos do admin.');
             }
@@ -47,7 +48,7 @@ export function useAdminProdutos(): UseAdminProdutosReturn {
         } finally {
             setLoading(false);
         }
-    }, [searchParams]);
+    }, [searchParamsStr]);
 
     useEffect(() => {
         fetchProdutos();

@@ -33,15 +33,22 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
 
-    const totalProdutos = await prisma.produto.count({
-      where: { categoriaId: id, ativo: true },
-    });
+    // Verificar produtos ativos e inativos — foreign key impede deleção com qualquer produto
+    const [ativos, inativos] = await Promise.all([
+      prisma.produto.count({ where: { categoriaId: id, ativo: true } }),
+      prisma.produto.count({ where: { categoriaId: id, ativo: false } }),
+    ]);
 
-    if (totalProdutos > 0) {
+    if (ativos > 0) {
       return NextResponse.json(
-        { error: `Não é possível excluir: ${totalProdutos} produto(s) ativo(s) nesta categoria.` },
+        { error: `Não é possível excluir: ${ativos} produto(s) ativo(s) nesta categoria.` },
         { status: 409 },
       );
+    }
+
+    if (inativos > 0) {
+      // Deletar fisicamente os produtos inativos antes de remover a categoria
+      await prisma.produto.deleteMany({ where: { categoriaId: id, ativo: false } });
     }
 
     await prisma.categoria.delete({ where: { id } });

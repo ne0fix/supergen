@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
-import Image from 'next/image';
 import Link from 'next/link';
 import { PlusCircle, Edit, Trash2, Loader2 } from 'lucide-react';
+import { AdminTableSkeleton } from '@/src/components/ui/Skeleton';
 import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 import { ProdutoAdminDTO } from '@/src/lib/dto';
 import { ColumnDef } from '@/src/components/admin/ui/DataTable';
@@ -22,13 +22,16 @@ function PageFilters() {
   const { categorias } = useCategoriasViewModel();
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [debouncedQuery] = useDebounce(query, 500);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return; }
     const p = new URLSearchParams(searchParams.toString());
     debouncedQuery ? p.set('q', debouncedQuery) : p.delete('q');
     p.set('page', '1');
     router.push(`${pathname}?${p.toString()}`);
-  }, [debouncedQuery, pathname, router, searchParams]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQuery]);
 
   const set = (key: string, value: string) => {
     const p = new URLSearchParams(searchParams.toString());
@@ -121,8 +124,13 @@ function ProdutosContent() {
       accessor: 'nome',
       cell: (_, row) => (
         <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-            <Image src={row.imagem} alt={row.nome} fill sizes="40px" className="object-contain p-0.5" onError={() => {}} />
+          <div className="w-10 h-10 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+            <img
+              src={row.imagem}
+              alt={row.nome}
+              className="w-full h-full object-contain p-0.5"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/gn2.png'; }}
+            />
           </div>
           <Link href={`/admin/produtos/${row.id}`} className="font-medium text-sm text-gray-900 hover:text-green-700 line-clamp-2">
             {row.nome}
@@ -201,9 +209,7 @@ function ProdutosContent() {
       <PageFilters />
 
       {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="animate-spin text-green-600" size={28} />
-        </div>
+        <AdminTableSkeleton rows={10} cols={6} />
       ) : (
         <DataTable columns={columns} data={produtos} loading={false} pagination={pagination} onPageChange={setPage} />
       )}

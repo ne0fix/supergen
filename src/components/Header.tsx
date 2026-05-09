@@ -1,26 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCarrinhoViewModel } from '../viewmodels/carrinho.vm';
 import { ShoppingCart, Heart, User, Search, Phone, MapPin, ChevronDown, Menu, X } from 'lucide-react';
-
-const NAV_LINKS = [
-  { href: '/',                                    label: 'Início' },
-  { href: '/produtos?categoria=hortifruti',        label: 'Hortifruti' },
-  { href: '/produtos?categoria=frios-e-embutidos', label: 'Frios' },
-  { href: '/produtos?categoria=congelados',        label: 'Congelados' },
-  { href: '/produtos?categoria=bebidas',           label: 'Bebidas' },
-  { href: '/produtos?categoria=higiene-e-beleza',  label: 'Higiene' },
-  { href: '/produtos?categoria=limpeza',           label: 'Limpeza' },
-  { href: '/produtos?categoria=pet-shop',          label: 'Pet Shop' },
-  { href: '/produtos?categoria=utilidades',        label: 'Utilidades' },
-];
+import { Categoria } from '../models/produto.model';
+import { ProdutoAPI } from '../services/api/produto.api';
 
 export default function Header() {
   const { quantidadeTotal } = useCarrinhoViewModel();
   const [menuAberto, setMenuAberto] = useState(false);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+
+  useEffect(() => {
+    ProdutoAPI.listarCategorias().then(setCategorias).catch(() => {});
+  }, []);
 
   return (
     <header className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
@@ -37,7 +32,7 @@ export default function Header() {
       </div>
 
       {/* Main Header */}
-      <div className="container mx-auto px-2 sm:px-4 max-w-7xl py-3 flex items-center justify-between gap-2 sm:gap-3">
+      <div className="container mx-auto px-2 sm:px-4 max-w-7xl py-2 flex items-center justify-between gap-2 sm:gap-3">
 
         {/* Hambúrguer — apenas mobile */}
         <button
@@ -48,14 +43,14 @@ export default function Header() {
           {menuAberto ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        {/* Logo — apenas sm+ */}
-        <Link href="/" className="hidden sm:flex items-center flex-shrink-0">
+        {/* Logo */}
+        <Link href="/" className="hidden sm:flex items-center flex-shrink-0 mr-5">
           <Image
-            src="/gn.png"
+            src="/gn2.png"
             alt="Ekomart"
             width={499}
             height={241}
-            className="h-10 md:h-16 w-auto"
+            className="h-12 sm:h-14 md:h-24 w-auto"
             priority
           />
         </Link>
@@ -64,9 +59,9 @@ export default function Header() {
         <div className="flex-1 min-w-0">
           <div className="flex w-full border-2 border-green-500 rounded-xl overflow-hidden focus-within:border-green-600 transition-colors">
             <select className="bg-gray-50 border-r border-gray-200 px-3 py-2.5 text-sm outline-none text-gray-600 font-medium hidden lg:block cursor-pointer">
-              <option>Todas</option>
-              {['Hortifruti', 'Frios', 'Bebidas', 'Limpeza'].map(c => (
-                <option key={c}>{c}</option>
+              <option value="">Todas</option>
+              {categorias.map(c => (
+                <option key={c.id} value={c.id}>{c.nome}</option>
               ))}
             </select>
             <input
@@ -105,7 +100,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* Navegação desktop */}
+      {/* Navegação desktop — categorias dinâmicas */}
       <nav className="border-t border-gray-100 hidden md:block overflow-x-auto hide-scrollbar">
         <div className="px-4 max-w-7xl mx-auto">
           <ul className="flex items-center gap-0.5 text-sm font-medium text-gray-700 py-1 w-max min-w-full">
@@ -117,13 +112,13 @@ export default function Header() {
                 Categorias <ChevronDown size={14} />
               </Link>
             </li>
-            {NAV_LINKS.slice(1).map(link => (
-              <li key={link.href} className="flex-shrink-0">
+            {categorias.map(cat => (
+              <li key={cat.id} className="flex-shrink-0">
                 <Link
-                  href={link.href}
+                  href={`/produtos?categoria=${encodeURIComponent(cat.id)}`}
                   className="px-3 py-2 rounded-lg hover:bg-gray-50 hover:text-green-600 transition-colors block"
                 >
-                  {link.label}
+                  {cat.icone} {cat.nome}
                 </Link>
               </li>
             ))}
@@ -136,7 +131,7 @@ export default function Header() {
         </div>
       </nav>
 
-      {/* Menu mobile — dropdown */}
+      {/* Menu mobile — categorias dinâmicas */}
       {menuAberto && (
         <div className="sm:hidden border-t border-gray-100 bg-white shadow-lg">
           <div className="container mx-auto px-4 py-3 max-w-7xl">
@@ -144,14 +139,14 @@ export default function Header() {
               🔥 Até 40% OFF hoje — aproveite!
             </div>
             <ul className="grid grid-cols-2 gap-1">
-              {NAV_LINKS.map(link => (
-                <li key={link.href}>
+              {categorias.map(cat => (
+                <li key={cat.id}>
                   <Link
-                    href={link.href}
+                    href={`/produtos?categoria=${encodeURIComponent(cat.id)}`}
                     onClick={() => setMenuAberto(false)}
                     className="flex items-center gap-2 px-3 py-3 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 font-medium text-sm transition-colors"
                   >
-                    {link.label}
+                    <span>{cat.icone}</span> {cat.nome}
                   </Link>
                 </li>
               ))}

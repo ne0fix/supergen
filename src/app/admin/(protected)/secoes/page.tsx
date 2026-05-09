@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
 import SecaoCard from '@/src/components/admin/SecaoCard';
 import { SecaoAdminDTO } from '@/src/lib/dto';
+import { Skeleton } from '@/src/components/ui/Skeleton';
 
 interface CategoriaOpcao { id: string; nome: string }
 interface TagOpcao { id: string; label: string }
@@ -97,8 +98,21 @@ export default function SecoesPage() {
 
   if (carregando) {
     return (
-      <div className="flex justify-center items-center py-32">
-        <Loader2 className="animate-spin text-green-600" size={32} />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2"><Skeleton className="h-7 w-48" /><Skeleton className="h-4 w-72" /></div>
+          <Skeleton className="h-9 w-32 rounded-lg" />
+        </div>
+        {[1, 2].map(i => (
+          <div key={i} className="bg-white border border-gray-100 rounded-2xl p-5 space-y-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-5 w-5 rounded" />
+              <Skeleton className="h-5 flex-1 max-w-xs" />
+              <Skeleton className="h-7 w-16 rounded-full ml-auto" />
+              <Skeleton className="h-7 w-7 rounded" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

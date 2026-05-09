@@ -14,11 +14,11 @@ export default function Footer() {
           <div className="col-span-2 lg:col-span-1">
             <div className="mb-2">
               <Image
-                src="/gn.png"
+                src="/gn2.png"
                 alt="Ekomart"
                 width={499}
                 height={241}
-                className="h-10 mb-5 sm:h-12 w-auto"
+                className="h-10 mb-5 sm:h-12 w-auto drop-shadow-lg"
               />
             </div>
             <p className="text-sm leading-relaxed mb-5">

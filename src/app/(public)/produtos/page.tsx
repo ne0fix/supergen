@@ -1,23 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import ProdutoCard from '@/src/components/ProdutoCard';
 import { useCategoriasViewModel } from '@/src/viewmodels/categorias.vm';
 import { ProdutoAPI } from '@/src/services/api/produto.api';
 import { Produto } from '@/src/models/produto.model';
 import { ChevronRight, Filter, X } from 'lucide-react';
+import { ProdutoCardSkeleton } from '@/src/components/ui/Skeleton';
 
 function ProdutosContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const categoriaParam = searchParams.get('categoria');
+
+  // Categoria vem sempre da URL — fonte de verdade única
+  const categoriaSelecionada = searchParams.get('categoria');
 
   const { categorias } = useCategoriasViewModel();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [carregando, setCarregando] = useState(true);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState<string | null>(categoriaParam);
   const [ordenacao, setOrdenacao] = useState('padrao');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -31,7 +33,18 @@ function ProdutosContent() {
     }
   }, []);
 
-  useEffect(() => { carregar(categoriaSelecionada); }, [categoriaSelecionada, carregar]);
+  // Recarrega sempre que a URL mudar
+  useEffect(() => {
+    carregar(categoriaSelecionada);
+  }, [categoriaSelecionada, carregar]);
+
+  const selecionarCategoria = (id: string | null) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (id) params.set('categoria', id);
+    else params.delete('categoria');
+    router.push(`/produtos?${params.toString()}`);
+    setShowFilters(false);
+  };
 
   const produtosFiltrados = [...produtos].sort((a, b) => {
     if (ordenacao === 'menor') return a.preco - b.preco;
@@ -44,12 +57,19 @@ function ProdutosContent() {
 
   return (
     <div className="container mx-auto px-4 max-w-7xl py-8">
+      {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-gray-500 mb-6 overflow-x-auto whitespace-nowrap">
         <Link href="/" className="hover:text-green-600">Início</Link>
         <ChevronRight size={14} />
-        <span className="font-medium text-gray-900">
-          {nomeCategoria ?? 'Todos os Produtos'}
-        </span>
+        {nomeCategoria ? (
+          <>
+            <Link href="/produtos" className="hover:text-green-600">Todos os Produtos</Link>
+            <ChevronRight size={14} />
+            <span className="font-medium text-gray-900">{nomeCategoria}</span>
+          </>
+        ) : (
+          <span className="font-medium text-gray-900">Todos os Produtos</span>
+        )}
       </div>
 
       <div className="flex gap-6">
@@ -74,7 +94,7 @@ function ProdutosContent() {
               <ul className="space-y-1">
                 <li>
                   <button
-                    onClick={() => setCategoriaSelecionada(null)}
+                    onClick={() => selecionarCategoria(null)}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${!categoriaSelecionada ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
                     Todas as categorias
@@ -83,7 +103,7 @@ function ProdutosContent() {
                 {categorias.map(cat => (
                   <li key={cat.id}>
                     <button
-                      onClick={() => setCategoriaSelecionada(cat.id)}
+                      onClick={() => selecionarCategoria(cat.id)}
                       className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 ${categoriaSelecionada === cat.id ? 'bg-green-50 text-green-700 font-bold' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                       <span>{cat.icone}</span>
@@ -128,7 +148,7 @@ function ProdutosContent() {
           {carregando ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+                <ProdutoCardSkeleton key={i} />
               ))}
             </div>
           ) : produtosFiltrados.length === 0 ? (
@@ -136,7 +156,7 @@ function ProdutosContent() {
               <span className="text-5xl mb-4">🔍</span>
               <p className="font-bold text-lg">Nenhum produto encontrado</p>
               <p className="text-sm mt-1">Tente outra categoria</p>
-              <button onClick={() => setCategoriaSelecionada(null)} className="mt-4 text-green-600 hover:underline text-sm font-medium">
+              <button onClick={() => selecionarCategoria(null)} className="mt-4 text-green-600 hover:underline text-sm font-medium">
                 Ver todos
               </button>
             </div>

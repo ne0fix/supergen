@@ -3,24 +3,22 @@
 import { use, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useProdutoDetailViewModel, useProdutosViewModel } from '@/src/viewmodels/produtos.vm';
+import { useProdutoDetailViewModel, useProdutosRelacionados } from '@/src/viewmodels/produtos.vm';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import ProdutoCard from '@/src/components/ProdutoCard';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { ChevronRight, Heart, Minus, Plus, Share2, Star } from 'lucide-react';
+import { ProdutoDetailSkeleton } from '@/src/components/ui/Skeleton';
 
 export default function ProdutoDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const { produto, carregando, quantidadeSelecionada, incrementarQuantidade, decrementarQuantidade } = useProdutoDetailViewModel(resolvedParams.id);
-  const { produtos } = useProdutosViewModel();
+  const { produtos } = useProdutosRelacionados(produto?.categoriaId, produto?.id);
   const { adicionarItem } = useCarrinhoViewModel();
   const [activeTab, setActiveTab] = useState('descricao');
+  const [imagemAtiva, setImagemAtiva] = useState(0);
 
-  if (carregando) return (
-    <div className="container mx-auto px-4 py-16 text-center text-gray-500 font-medium">
-      Carregando produto...
-    </div>
-  );
+  if (carregando) return <ProdutoDetailSkeleton />;
   if (!produto) return (
     <div className="container mx-auto px-4 py-16 text-center font-bold text-xl text-gray-800">
       Produto não encontrado
@@ -44,34 +42,40 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
         {/* Imagens */}
         <div className="flex flex-col gap-3">
+          {/* Imagem principal */}
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
             <Image
-              src={produto.imagem}
+              src={[produto.imagem, ...(produto.imagens ?? [])][imagemAtiva] ?? produto.imagem}
               alt={produto.nome}
               width={600}
               height={600}
-              className="w-full aspect-square object-contain p-6 sm:p-10"
+              className="w-full aspect-square object-contain p-6 sm:p-10 transition-opacity duration-200"
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
-          {/* Miniaturas */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
-            {[1, 2, 3, 4].map(i => (
-              <div
-                key={i}
-                className={`rounded-xl border-2 overflow-hidden cursor-pointer bg-white transition-colors ${i === 1 ? 'border-green-500' : 'border-gray-200 hover:border-green-300'}`}
-              >
-                <Image
-                  src={produto.imagem}
-                  alt="Miniatura"
-                  width={100}
-                  height={100}
-                  className="w-full aspect-square object-contain p-2"
-                />
-              </div>
-            ))}
-          </div>
+
+          {/* Miniaturas — só aparece se houver imagens adicionais */}
+          {(produto.imagens ?? []).length > 0 && (
+            <div className={`grid gap-2 sm:gap-3 grid-cols-${Math.min((produto.imagens ?? []).length + 1, 5)}`}>
+              {[produto.imagem, ...(produto.imagens ?? [])].map((src, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setImagemAtiva(i)}
+                  className={`rounded-xl border-2 overflow-hidden bg-white transition-all ${imagemAtiva === i ? 'border-green-500 shadow-md' : 'border-gray-200 hover:border-green-300'}`}
+                >
+                  <Image
+                    src={src}
+                    alt={`Imagem ${i + 1}`}
+                    width={100}
+                    height={100}
+                    className="w-full aspect-square object-contain p-2"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Informações */}
@@ -113,21 +117,27 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
           {/* Quantidade + Carrinho */}
           <div className="flex gap-3 mb-6">
-            <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden h-12 w-32 bg-white flex-shrink-0">
-              <button onClick={decrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+            <div className={`flex items-center border rounded-xl overflow-hidden h-12 w-32 bg-white flex-shrink-0 ${produto.emEstoque ? 'border-gray-300' : 'border-gray-200 opacity-40 pointer-events-none'}`}>
+              <button onClick={decrementarQuantidade} disabled={!produto.emEstoque} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors disabled:cursor-not-allowed">
                 <Minus size={16} />
               </button>
               <span className="flex-1 text-center font-bold text-gray-800">{quantidadeSelecionada}</span>
-              <button onClick={incrementarQuantidade} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors">
+              <button onClick={incrementarQuantidade} disabled={!produto.emEstoque} className="w-10 h-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-green-600 transition-colors disabled:cursor-not-allowed">
                 <Plus size={16} />
               </button>
             </div>
-            <button
-              onClick={() => adicionarItem(produto, quantidadeSelecionada)}
-              className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md shadow-green-600/25 transition-all"
-            >
-              Adicionar ao Carrinho
-            </button>
+            {produto.emEstoque ? (
+              <button
+                onClick={() => adicionarItem(produto, quantidadeSelecionada)}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 shadow-md shadow-green-600/25 transition-all"
+              >
+                Adicionar ao Carrinho
+              </button>
+            ) : (
+              <div className="flex-1 bg-gray-100 text-gray-400 h-12 rounded-xl font-bold text-base flex items-center justify-center gap-2 cursor-not-allowed select-none">
+                Produto Esgotado
+              </div>
+            )}
             <button className="w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex-shrink-0">
               <Heart size={20} />
             </button>
@@ -197,7 +207,10 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
           {activeTab === 'nutritional' && (
             <div className="grid grid-cols-2 gap-3 max-w-xs">
               {[['Calorias', '45 kcal'], ['Carboidratos', '9g'], ['Açúcar', '6g'], ['Fibra', '3g'], ['Proteína', '1g']].map(([k, v]) => (
-                <><div key={k} className="font-semibold text-gray-700">{k}:</div><div>{v}</div></>
+                <div key={k} className="contents">
+                  <div className="font-semibold text-gray-700">{k}:</div>
+                  <div>{v}</div>
+                </div>
               ))}
             </div>
           )}
@@ -222,7 +235,7 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
       <div>
         <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-5">Produtos Relacionados</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-          {produtos.filter(p => p.id !== produto.id && p.categoria === produto.categoria).slice(0, 5).map(p => (
+          {produtos.map(p => (
             <ProdutoCard key={p.id} produto={p} />
           ))}
         </div>

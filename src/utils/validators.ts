@@ -15,6 +15,7 @@ export const ProdutoCreateSchema = z.object({
   preco: z.number().positive('O preço deve ser um número positivo.'),
   precoOriginal: z.number().positive('O preço original deve ser positivo.').nullable().optional(),
   imagem: z.string().min(1, 'A imagem é obrigatória.'),
+  imagens: z.array(z.string().url().or(z.string().startsWith('/'))).max(4, 'Máximo 4 imagens adicionais.').default([]),
   quantidadePacote: z.string().min(1, 'A quantidade do pacote é obrigatória.'),
   categoriaId: z.string().min(1, 'A categoria é obrigatória.'),
   emEstoque: z.boolean().default(true),

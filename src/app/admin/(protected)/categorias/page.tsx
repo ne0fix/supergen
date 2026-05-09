@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check, Trash2, Plus, Loader2 } from 'lucide-react';
+import { Skeleton } from '@/src/components/ui/Skeleton';
 import Toggle from '@/src/components/admin/ui/Toggle';
 import ConfirmDialog from '@/src/components/admin/ui/ConfirmDialog';
 
@@ -104,8 +105,28 @@ export default function CategoriasPage() {
 
   if (carregando) {
     return (
-      <div className="flex justify-center items-center py-32">
-        <Loader2 className="animate-spin text-green-600" size={32} />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton className="h-9 w-36 rounded-lg" />
+        </div>
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="grid grid-cols-6 gap-4 px-4 py-3 border-b border-gray-100">
+            {['Ícone','Nome','Ordem','Ativo','',''].map((_, i) => (
+              <Skeleton key={i} className="h-4 rounded" />
+            ))}
+          </div>
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-6 gap-4 px-4 py-3 border-b border-gray-50 last:border-0 items-center">
+              <Skeleton className="h-9 w-12 rounded-lg" />
+              <Skeleton className="h-9 rounded-lg" />
+              <Skeleton className="h-9 w-16 rounded-lg" />
+              <Skeleton className="h-7 w-12 rounded-full" />
+              <Skeleton className="h-8 w-16 rounded-lg" />
+              <Skeleton className="h-8 w-8 rounded-lg" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }

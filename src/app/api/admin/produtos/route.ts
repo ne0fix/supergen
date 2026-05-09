@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
     const emEstoqueParam = searchParams.get('emEstoque');
     const ativoParam = searchParams.get('ativo');
 
-    const where: Prisma.ProdutoWhereInput = {};
+    // Por padrão mostra apenas ativos; ?ativo=false mostra inativos; ?ativo=all mostra todos
+    const where: Prisma.ProdutoWhereInput =
+      ativoParam === 'all' ? {} : { ativo: ativoParam === 'false' ? false : true };
 
     if (categoria) where.categoriaId = categoria;
     if (q) where.OR = [
@@ -23,7 +25,6 @@ export async function GET(request: NextRequest) {
       { descricao: { contains: q, mode: 'insensitive' } },
     ];
     if (emEstoqueParam) where.emEstoque = emEstoqueParam === 'true';
-    if (ativoParam) where.ativo = ativoParam === 'true';
 
     const [produtos, total] = await prisma.$transaction([
         prisma.produto.findMany({

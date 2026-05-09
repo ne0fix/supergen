@@ -10,6 +10,8 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag');
     const q = searchParams.get('q');
     const emEstoqueParam = searchParams.get('emEstoque');
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
+    const exclude = searchParams.get('exclude');
 
     const where: Prisma.ProdutoWhereInput = {
       ativo: true,
@@ -38,25 +40,24 @@ export async function GET(request: NextRequest) {
       where.emEstoque = emEstoqueParam === 'true';
     }
 
+    if (exclude) {
+      where.NOT = { id: exclude };
+    }
+
     const produtos = await prisma.produto.findMany({
       where,
       include: {
         categoria: true,
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
+        tags: { include: { tag: true } },
       },
-      orderBy: {
-        criadoEm: 'desc',
-      },
+      orderBy: { criadoEm: 'desc' },
+      ...(limit ? { take: limit } : {}),
     });
 
     const produtosDTO = produtos.map(produtoToDTO);
 
     return NextResponse.json(produtosDTO, {
-      headers: { 'Cache-Control': 's-maxage=30, stale-while-revalidate=120' },
+      headers: { 'Cache-Control': 's-maxage=10, stale-while-revalidate=30' },
     });
   } catch (error) {
     console.error('Erro ao buscar produtos:', error);

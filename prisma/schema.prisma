@@ -34,6 +34,7 @@ model Produto {
   preco            Decimal  @db.Decimal(10, 2)
   precoOriginal    Decimal? @db.Decimal(10, 2)
   imagem           String
+  imagens          String[] @default([])
   quantidadePacote String
   emEstoque        Boolean  @default(true)
   avaliacao        Float    @default(0)

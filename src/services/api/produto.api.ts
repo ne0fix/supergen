@@ -36,5 +36,11 @@ export const ProdutoAPI = {
 
   async buscarProdutos(query: string): Promise<Produto[]> {
     return fetchAPI<Produto[]>(`/produtos?q=${encodeURIComponent(query)}`);
-  }
+  },
+
+  async listarRelacionados(categoriaId: string, excludeId: string, limit = 5): Promise<Produto[]> {
+    return fetchAPI<Produto[]>(
+      `/produtos?categoria=${encodeURIComponent(categoriaId)}&limit=${limit}&exclude=${excludeId}`
+    );
+  },
 };
