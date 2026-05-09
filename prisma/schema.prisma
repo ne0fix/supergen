@@ -44,6 +44,7 @@ model Produto {
   categoria        Categoria  @relation(fields: [categoriaId], references: [id])
   tags             ProdutoTag[]
   secaoItems       SecaoItem[]
+  orderItems       OrderItem[]
   criadoEm    DateTime @default(now())
   atualizadoEm DateTime @updatedAt
   @@index([categoriaId])
@@ -95,4 +96,88 @@ model SecaoItem {
   produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
   @@unique([secaoId, produtoId])
   @@index([secaoId])
+}
+
+// ─── Enums de Pedido ──────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PROCESSING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum MetodoPagamento {
+  PIX
+  CARTAO
+}
+
+enum EntregaTipo {
+  ENTREGA
+  RETIRADA
+}
+
+// ─── Pedido ───────────────────────────────────────────────────────────────────
+
+model Order {
+  id                String          @id @default(cuid())
+  status            OrderStatus     @default(PENDING_PAYMENT)
+
+  // Comprador anônimo — coletado no checkout
+  compradorNome     String
+  compradorEmail    String
+  compradorCpf      String
+  compradorTelefone String
+
+  // Entrega
+  entregaTipo       EntregaTipo
+  cep               String?
+  logradouro        String?
+  numero            String?
+  complemento       String?
+  bairro            String?
+  cidade            String?
+  uf                String?
+
+  // Valores — SEMPRE calculados no backend
+  subtotal          Decimal         @db.Decimal(10,2)
+  frete             Decimal         @db.Decimal(10,2) @default(0)
+  total             Decimal         @db.Decimal(10,2)
+
+  // Mercado Pago
+  metodoPagamento   MetodoPagamento?
+  mpPaymentId       String?         @unique
+  mpStatus          String?         // status bruto retornado pelo MP
+  mpQrCode          String?         @db.Text  // PIX: código copia-e-cola
+  mpQrCodeBase64    String?         @db.Text  // PIX: imagem base64
+
+  criadoEm         DateTime        @default(now())
+  atualizadoEm     DateTime        @updatedAt
+  pagoEm           DateTime?
+
+  items            OrderItem[]
+
+  @@index([status])
+  @@index([compradorEmail])
+  @@index([mpPaymentId])
+}
+
+// ─── Item do Pedido ───────────────────────────────────────────────────────────
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  produtoId     String
+  produto       Produto  @relation(fields: [produtoId], references: [id])
+
+  // Snapshot — valores congelados no momento da compra
+  nomeProduto   String
+  imagemProduto String
+  preco         Decimal  @db.Decimal(10,2)
+  quantidade    Int
+  subtotal      Decimal  @db.Decimal(10,2)
+
+  @@index([orderId])
 }

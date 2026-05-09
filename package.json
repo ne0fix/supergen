@@ -7,7 +7,11 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint .",
-    "clean": "next clean"
+    "clean": "next clean",
+    "test:frete": "node scripts/testar-frete.mjs",
+    "test:pix": "node scripts/testar-pix.mjs",
+    "test:webhook": "node scripts/simular-webhook.mjs",
+    "tunnel": "node scripts/tunel.mjs"
   },
   "prisma": {
     "seed": "ts-node --project prisma/tsconfig.json prisma/seed.ts"
@@ -16,6 +20,7 @@
     "@google/genai": "^2.0.0",
     "@headlessui/react": "^2.2.10",
     "@hookform/resolvers": "^5.2.2",
+    "@mercadopago/sdk-react": "^1.0.7",
     "@prisma/client": "^5.16.2",
     "@vercel/blob": "^2.3.3",
     "autoprefixer": "^10.5.0",
@@ -25,6 +30,7 @@
     "jose": "^6.2.3",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.14.0",
+    "mercadopago": "^2.12.0",
     "motion": "^12.38.0",
     "next": "^16.2.6",
     "postcss": "^8.5.14",
@@ -45,6 +51,7 @@
     "eslint": "10.3.0",
     "eslint-config-next": "16.2.6",
     "firebase-tools": "^15.0.0",
+    "localtunnel": "^2.0.2",
     "prisma": "^5.16.2",
     "tailwindcss": "4.2.4",
     "ts-node": "^10.9.2",

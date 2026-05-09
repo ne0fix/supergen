@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { ChevronRight, Minus, Plus, Trash2, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function CarrinhoPage() {
-  const { itens, total, subtotal, frete, impostos, atualizarQuantidade, removerItem, limparCarrinho, quantidadeTotal } = useCarrinhoViewModel();
+  const router = useRouter();
+  const { itens, total, subtotal, freteEstimado, atualizarQuantidade, removerItem, limparCarrinho, quantidadeTotal } = useCarrinhoViewModel();
 
   if (itens.length === 0) {
     return (
@@ -167,34 +169,13 @@ export default function CarrinhoPage() {
                 <span className="font-bold text-gray-900">{formatarMoeda(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-600">
-                <span>Frete</span>
+                <span>Frete est.*</span>
                 <span className="font-bold">
-                  {frete === 0
+                  {freteEstimado === 0
                     ? <span className="text-green-600">Grátis</span>
-                    : <span className="text-gray-900">{formatarMoeda(frete)}</span>
+                    : <span className="text-gray-900">{formatarMoeda(freteEstimado)}</span>
                   }
                 </span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Impostos est.</span>
-                <span className="font-bold text-gray-900">{formatarMoeda(impostos)}</span>
-              </div>
-            </div>
-
-            <div className="border-t border-dashed border-gray-300 my-4" />
-
-            {/* Cupom */}
-            <div className="mb-5">
-              <label className="text-xs font-bold text-gray-700 block mb-2">Cupom de Desconto</label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  placeholder="Insira o código"
-                  className="flex-1 border border-gray-300 rounded-xl px-3 py-2 outline-none focus:border-green-500 bg-white text-sm transition-colors"
-                />
-                <button className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-xl font-bold text-sm transition-colors">
-                  Aplicar
-                </button>
               </div>
             </div>
 
@@ -202,12 +183,19 @@ export default function CarrinhoPage() {
 
             <div className="flex justify-between items-end mb-6">
               <span className="font-extrabold text-gray-900">Total</span>
-              <span className="text-2xl sm:text-3xl font-black text-green-600">{formatarMoeda(total)}</span>
+              <span className="text-2xl sm:text-3xl font-black text-green-600">{formatarMoeda(subtotal + freteEstimado)}</span>
             </div>
 
-            <button className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-green-600/25 transition-all hover:-translate-y-0.5">
+            <button
+              onClick={() => router.push('/checkout')}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl text-base mb-5 shadow-md shadow-green-600/25 transition-all hover:-translate-y-0.5"
+            >
               Finalizar Compra
             </button>
+
+            <p className="text-[10px] text-gray-400 text-center mt-2">
+              * Frete calculado com precisão no checkout
+            </p>
 
             {/* Selos de segurança */}
             <div className="pt-4 border-t border-gray-200 text-center">
@@ -215,7 +203,7 @@ export default function CarrinhoPage() {
                 <ShieldCheck size={16} className="text-green-500" /> Pagamento 100% Seguro
               </div>
               <div className="flex items-center justify-center gap-2">
-                {['VISA', 'MASTER', 'PIX', 'BOLETO'].map(m => (
+                {['VISA', 'MASTER', 'PIX'].map(m => (
                   <div key={m} className="bg-gray-200 px-2 py-1 rounded text-[10px] font-bold text-gray-500">{m}</div>
                 ))}
               </div>

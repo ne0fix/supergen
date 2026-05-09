@@ -81,3 +81,32 @@ export type SecaoUpdateData = z.infer<typeof SecaoUpdateSchema>;
 export const OrdemItensSchema = z.array(
   z.object({ produtoId: z.string(), ordem: z.coerce.number() }),
 );
+
+export function validarCPF(cpf: string): boolean {
+  const digits = cpf.replace(/\D/g, '');
+  if (digits.length !== 11) return false;
+  if (/^(\d)\1+$/.test(digits)) return false;
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(digits[i]) * (10 - i);
+  let check = (sum * 10) % 11;
+  if (check === 10 || check === 11) check = 0;
+  if (check !== parseInt(digits[9])) return false;
+
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(digits[i]) * (11 - i);
+  check = (sum * 10) % 11;
+  if (check === 10 || check === 11) check = 0;
+  return check === parseInt(digits[10]);
+}
+
+export function formatarCPF(cpf: string): string {
+  const d = cpf.replace(/\D/g, '').slice(0, 11);
+  return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
+export function formatarTelefone(tel: string): string {
+  const d = tel.replace(/\D/g, '').slice(0, 11);
+  if (d.length === 11) return d.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+  return d.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+}

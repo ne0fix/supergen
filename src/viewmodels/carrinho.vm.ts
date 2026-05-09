@@ -1,69 +1,102 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
 import { ItemCarrinho, Produto } from '../models/produto.model';
 
-// Para simplificar, usando um estado global simples na memória (numa app real, context/zustand/redux)
-let carrinhoGlobal: ItemCarrinho[] = [];
-let listeners: Array<() => void> = [];
+const STORAGE_KEY = 'ekomart:carrinho';
 
+function lerStorage(): ItemCarrinho[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function salvarStorage(itens: ItemCarrinho[]) {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(itens));
+}
+
+// Pub/sub para sincronizar entre hooks na mesma aba
+let listeners: Array<() => void> = [];
 const notificar = () => listeners.forEach(l => l());
 
 export function useCarrinhoViewModel() {
-  const [itens, setItens] = useState<ItemCarrinho[]>(carrinhoGlobal);
+  const [itens, setItens] = useState<ItemCarrinho[]>([]);
 
-  // Inscreve para mudanças
+  // Hidratação no cliente
   useEffect(() => {
-    const listener = () => setItens([...carrinhoGlobal]);
+    setItens(lerStorage());
+
+    const listener = () => setItens(lerStorage());
     listeners.push(listener);
+
+    // Sincronizar entre abas
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY) setItens(lerStorage());
+    };
+    window.addEventListener('storage', onStorage);
+
     return () => {
       listeners = listeners.filter(l => l !== listener);
+      window.removeEventListener('storage', onStorage);
     };
   }, []);
 
-  const subtotal = itens.reduce((acc, item) => acc + (item.produto.preco * item.quantidade), 0);
-  const frete = subtotal > 100 ? 0 : 15; // Frete grátis acima de $100
-  const impostos = subtotal * 0.05; // 5% de imposto fictício
-  const total = subtotal + frete + impostos;
+  const subtotal = itens.reduce((acc, item) => acc + item.produto.preco * item.quantidade, 0);
+  const limiteFreteGratis = parseFloat(process.env.NEXT_PUBLIC_FRETE_GRATIS_ACIMA ?? '200');
+  const freteEstimado = subtotal >= limiteFreteGratis ? 0 : 15;
+  const total = subtotal + freteEstimado;
 
-  const adicionarItem = (produto: Produto, quantidade: number = 1) => {
-    if (!produto.emEstoque) return; // bloqueia produto esgotado
-    const existe = carrinhoGlobal.find(i => i.produto.id === produto.id);
-    if (existe) {
-      existe.quantidade += quantidade;
+  const adicionarItem = useCallback((produto: Produto, quantidade = 1) => {
+    if (!produto.emEstoque) return;
+    const itensAtuais = lerStorage();
+    const idx = itensAtuais.findIndex(i => i.produto.id === produto.id);
+    if (idx >= 0) {
+      itensAtuais[idx].quantidade += quantidade;
     } else {
-      carrinhoGlobal.push({ produto, quantidade });
+      itensAtuais.push({ produto, quantidade });
     }
+    salvarStorage(itensAtuais);
     notificar();
-  };
+  }, []);
 
-  const removerItem = (produtoId: string) => {
-    carrinhoGlobal = carrinhoGlobal.filter(i => i.produto.id !== produtoId);
+  const removerItem = useCallback((produtoId: string) => {
+    const novos = lerStorage().filter(i => i.produto.id !== produtoId);
+    salvarStorage(novos);
     notificar();
-  };
+  }, []);
 
-  const atualizarQuantidade = (produtoId: string, quantidade: number) => {
-    const item = carrinhoGlobal.find(i => i.produto.id === produtoId);
-    if (item) {
-      item.quantidade = quantidade;
-      if (item.quantidade <= 0) removerItem(produtoId);
-      else notificar();
+  const atualizarQuantidade = useCallback((produtoId: string, quantidade: number) => {
+    const itensAtuais = lerStorage();
+    const idx = itensAtuais.findIndex(i => i.produto.id === produtoId);
+    if (idx < 0) return;
+    if (quantidade <= 0) {
+      itensAtuais.splice(idx, 1);
+    } else {
+      itensAtuais[idx].quantidade = quantidade;
     }
-  };
-
-  const limparCarrinho = () => {
-    carrinhoGlobal = [];
+    salvarStorage(itensAtuais);
     notificar();
-  };
+  }, []);
+
+  const limparCarrinho = useCallback(() => {
+    salvarStorage([]);
+    notificar();
+  }, []);
 
   return {
     itens,
     quantidadeTotal: itens.reduce((acc, item) => acc + item.quantidade, 0),
     subtotal,
-    frete,
-    impostos,
+    freteEstimado,
     total,
     adicionarItem,
     removerItem,
     atualizarQuantidade,
-    limparCarrinho
+    limparCarrinho,
   };
 }
