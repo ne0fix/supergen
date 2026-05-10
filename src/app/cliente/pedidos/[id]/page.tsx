@@ -167,7 +167,7 @@ export default function PedidoDetalhePage() {
         </section>
       )}
 
-      <div className="flex flex-col gap-6">
+      <div className="space-y-6">
 
         {/* Itens */}
         <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
