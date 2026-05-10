@@ -9,14 +9,14 @@ export function OrderTimeline({ statusAtual, entregaTipo }: { statusAtual: strin
   const getIdx = (status: string) => {
     switch (status) {
       case 'PEDIDO_REALIZADO':
+        return 0;
       case 'PAGAMENTO_PROCESSANDO':
       case 'PENDING_PAYMENT':
       case 'PROCESSING':
-        return 0;
+        return 1;
       case 'APROVADO':
       case 'PAID':
       case 'PAGO':
-        return 1;
       case 'EM_SEPARACAO':
         return 2;
       case 'LIBERADO':
@@ -47,20 +47,16 @@ export function OrderTimeline({ statusAtual, entregaTipo }: { statusAtual: strin
           const atual = i === currentIdx;
           const futuro = i > currentIdx;
 
-          let circleClasses = "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 z-10 transition-colors duration-300 ";
-          if (passado) {
-            circleClasses += "bg-green-600 border-green-600 text-white";
-          } else if (atual) {
-            circleClasses += "bg-white border-green-600 text-green-600";
+          let circleClasses = "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2 z-10 transition-all duration-300 ";
+          if (passado || atual) {
+            circleClasses += "bg-green-600 border-green-600 text-white shadow-sm shadow-green-600/20";
           } else {
             circleClasses += "bg-white border-gray-300 text-gray-400";
           }
 
           let textClasses = "text-[10px] sm:text-xs mt-2 text-center w-full px-0.5 leading-tight transition-colors duration-300 ";
-          if (passado) {
+          if (passado || atual) {
             textClasses += "font-bold text-green-700";
-          } else if (atual) {
-            textClasses += "font-bold text-green-600";
           } else {
             textClasses += "font-medium text-gray-400";
           }
