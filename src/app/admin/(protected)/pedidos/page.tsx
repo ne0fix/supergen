@@ -391,60 +391,90 @@ function PedidosContent() {
             <p className="text-sm font-semibold text-gray-400">Nenhum pedido encontrado</p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
-            {pedidos.map(pedido => {
-              const pag = STATUS_PAG[pedido.status] ?? STATUS_PAG.PENDING_PAYMENT;
-              return (
-                <div
-                  key={pedido.id}
-                  className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/60 transition-colors group"
-                >
-                  {/* Ícone colorido */}
-                  <div className={`hidden sm:flex w-10 h-10 rounded-xl items-center justify-center flex-shrink-0 ${pag.iconBg}`}>
-                    <ShoppingBag size={17} className={pag.text} />
-                  </div>
+          <>
+            {/* Cabeçalho das colunas */}
+            <div className="flex items-center gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100">
+              <div className="hidden sm:block w-10 flex-shrink-0" />
+              <div className="w-[100px] flex-shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Nº Pedido</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Comprador</span>
+              </div>
+              <div className="hidden lg:block w-[100px] flex-shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Pagamento</span>
+              </div>
+              <div className="w-[130px] flex-shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Status</span>
+              </div>
+              <div className="w-[80px] flex-shrink-0 text-right">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Valor</span>
+              </div>
+              <div className="w-14 flex-shrink-0 text-center">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Ação</span>
+              </div>
+            </div>
 
-                  {/* Número + data */}
-                  <div className="min-w-[90px] flex-shrink-0">
-                    <p className="text-xs font-mono font-bold text-gray-900 group-hover:text-green-700 transition-colors">
-                      #{pedido.id.slice(-8).toUpperCase()}
-                    </p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">
-                      {new Date(pedido.criadoEm).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
+            {/* Linhas de dados */}
+            <div className="divide-y divide-gray-50">
+              {pedidos.map(pedido => {
+                const pag = STATUS_PAG[pedido.status] ?? STATUS_PAG.PENDING_PAYMENT;
+                return (
+                  <div
+                    key={pedido.id}
+                    className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/60 transition-colors group"
+                  >
+                    {/* Ícone colorido */}
+                    <div className={`hidden sm:flex w-10 h-10 rounded-xl items-center justify-center flex-shrink-0 ${pag.iconBg}`}>
+                      <ShoppingBag size={17} className={pag.text} />
+                    </div>
 
-                  {/* Comprador */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{pedido.compradorNome}</p>
-                    <p className="text-xs text-gray-400 truncate">{pedido.compradorEmail}</p>
-                  </div>
+                    {/* Nº Pedido + data */}
+                    <div className="w-[100px] flex-shrink-0">
+                      <p className="text-xs font-mono font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                        #{pedido.id.slice(-8).toUpperCase()}
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">
+                        {new Date(pedido.criadoEm).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
 
-                  {/* Método + entrega */}
-                  <div className="hidden lg:block min-w-[90px] flex-shrink-0">
-                    <p className="text-xs font-medium text-gray-700">{pedido.metodoPagamento}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">{pedido.entregaTipo}</p>
-                  </div>
+                    {/* Comprador */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{pedido.compradorNome}</p>
+                      <p className="text-xs text-gray-400 truncate">{pedido.compradorEmail}</p>
+                    </div>
 
-                  {/* Total + status */}
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-bold text-gray-900">{formatarMoeda(pedido.total)}</p>
-                    <div className="mt-1.5">
+                    {/* Pagamento + entrega */}
+                    <div className="hidden lg:block w-[100px] flex-shrink-0">
+                      <p className="text-xs font-medium text-gray-700">{pedido.metodoPagamento}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{pedido.entregaTipo}</p>
+                    </div>
+
+                    {/* Status */}
+                    <div className="w-[130px] flex-shrink-0">
                       <PagBadge status={pedido.status} />
                     </div>
-                  </div>
 
-                  {/* Botão */}
-                  <button
-                    onClick={() => setPedidoSelecionado(pedido.id)}
-                    className="flex-shrink-0 px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-700 rounded-lg text-xs font-bold transition-all"
-                  >
-                    Ver
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+                    {/* Valor */}
+                    <div className="w-[80px] flex-shrink-0 text-right">
+                      <p className="text-sm font-bold text-gray-900">{formatarMoeda(pedido.total)}</p>
+                    </div>
+
+                    {/* Ação */}
+                    <div className="w-14 flex-shrink-0 flex justify-center">
+                      <button
+                        onClick={() => setPedidoSelecionado(pedido.id)}
+                        className="px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-700 rounded-lg text-xs font-bold transition-all"
+                      >
+                        Ver
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Paginação */}
