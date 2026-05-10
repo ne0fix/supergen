@@ -59,6 +59,24 @@ export default function PedidoDetalhePage() {
       .finally(() => setCarregando(false));
   }, [id]);
 
+  // Polling enquanto aguarda confirmação de pagamento
+  useEffect(() => {
+    const aguardando =
+      pedido?.statusCliente === 'PEDIDO_REALIZADO' ||
+      pedido?.statusCliente === 'PAGAMENTO_PROCESSANDO';
+    if (!aguardando) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/cliente/pedidos/${id}`);
+        const data = await res.json();
+        if (data.id) setPedido(data);
+      } catch { /* silencioso */ }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [id, pedido?.statusCliente]);
+
   const handleCopiarPix = () => {
     if (pedido?.mpQrCode) {
       navigator.clipboard.writeText(pedido.mpQrCode);
@@ -137,9 +155,15 @@ export default function PedidoDetalhePage() {
       {(pedido.statusCliente === 'PEDIDO_REALIZADO' || pedido.statusCliente === 'PAGAMENTO_PROCESSANDO') &&
         pedido.metodoPagamento === 'PIX' && pedido.mpQrCode && (
         <section className="bg-green-600 text-white rounded-xl p-3 sm:p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <QrCode size={20} />
-            <h3 className="text-base font-black">Aguardando Pagamento</h3>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <QrCode size={20} />
+              <h3 className="text-base font-black">Aguardando Pagamento</h3>
+            </div>
+            <div className="flex items-center gap-1.5 bg-white/20 px-2 py-1 rounded-lg">
+              <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span className="text-[10px] font-bold text-white/90">Verificando</span>
+            </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 bg-white/10 p-3 rounded-xl border border-white/20">
