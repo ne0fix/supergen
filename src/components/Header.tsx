@@ -79,7 +79,7 @@ export default function Header() {
         {/* Ações */}
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           {/* Conta — visível em todos os tamanhos */}
-          <Link href="/" className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
+          <Link href="/" className="flex flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50 border border-gray-200 sm:border-0">
             <User size={20} />
             <span className="hidden lg:block text-[10px] font-medium">Conta</span>
           </Link>
