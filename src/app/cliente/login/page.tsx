@@ -11,7 +11,8 @@ import { formatarCPF } from '@/src/utils/validators';
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/cliente';
+  const redirectParam = searchParams.get('redirect') || '/cliente';
+  const redirect = decodeURIComponent(redirectParam);
   const sucesso = searchParams.get('sucesso') === '1';
 
   const [cpf, setCpf] = useState('');

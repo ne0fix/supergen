@@ -29,10 +29,16 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
   const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
+    // Evitar loop: /cliente/login usa este layout mas não precisa de auth
+    if (pathname === '/cliente/login' || pathname.startsWith('/cliente/login?')) {
+      setCarregando(false);
+      return;
+    }
+
     fetch('/api/cliente/me')
       .then(res => {
         if (!res.ok) {
-          router.push(`/cliente/login?redirect=${pathname}`);
+          router.push(`/cliente/login?redirect=${encodeURIComponent(pathname)}`);
           return null;
         }
         return res.json();
@@ -41,7 +47,7 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
         if (data) setCliente(data);
       })
       .catch(() => {
-        router.push(`/cliente/login?redirect=${pathname}`);
+        router.push(`/cliente/login?redirect=${encodeURIComponent(pathname)}`);
       })
       .finally(() => setCarregando(false));
   }, [router, pathname]);
@@ -51,7 +57,9 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     router.push('/');
   };
 
-  if (carregando) {
+  const isLoginPage = pathname === '/cliente/login' || pathname.startsWith('/cliente/login?');
+
+  if (carregando && !isLoginPage) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="animate-spin text-green-600" size={40} />
@@ -59,7 +67,8 @@ export default function ClienteLayout({ children }: { children: React.ReactNode 
     );
   }
 
-  if (!cliente) return null;
+  // Página de login não usa o layout com sidebar — renderiza direto
+  if (isLoginPage || !cliente) return <>{children}</>;
 
   const NAV_ITEMS = [
     { label: 'Dashboard', href: '/cliente', icon: LayoutDashboard },
