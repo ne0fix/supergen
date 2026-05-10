@@ -104,25 +104,27 @@ export default function PedidoDetalhePage() {
       </div>
 
       {/* Status e Timeline */}
-      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 space-y-5 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
-            <p className="text-sm text-gray-500">
+            <p className="text-xs sm:text-sm text-gray-500">
               Realizado em {new Date(pedido.criadoEm).toLocaleDateString('pt-BR')} às {new Date(pedido.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <StatusBadge status={pedido.statusCliente} />
+            <div className="mt-1">
+              <StatusBadge status={pedido.statusCliente} />
+            </div>
           </div>
           {pedido.pagoEm && (
-            <div className="bg-green-50 px-4 py-2 rounded-xl flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-green-600" />
-              <span className="text-xs font-bold text-green-700">Pago em {new Date(pedido.pagoEm).toLocaleDateString('pt-BR')}</span>
+            <div className="bg-green-50 px-3 py-2 rounded-xl flex items-center gap-2 self-start sm:self-auto">
+              <CheckCircle2 size={16} className="text-green-600" />
+              <span className="text-[11px] sm:text-xs font-bold text-green-700">Pago em {new Date(pedido.pagoEm).toLocaleDateString('pt-BR')}</span>
             </div>
           )}
         </div>
 
-        <div className="pt-4 border-t border-gray-100 overflow-hidden">
-          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Progresso do Pedido</p>
-          <div className="-mx-2 px-2">
+        <div className="pt-4 border-t border-gray-100">
+          <p className="text-[11px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4">Progresso do Pedido</p>
+          <div className="w-full">
             <OrderTimeline statusAtual={pedido.statusCliente} entregaTipo={pedido.entregaTipo} />
           </div>
         </div>
