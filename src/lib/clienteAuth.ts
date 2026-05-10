@@ -1,7 +1,8 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import type { NextRequest } from 'next/server';
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? '');
+if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET não definido');
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export interface ClienteJWTPayload extends JWTPayload {
   clienteId: string;

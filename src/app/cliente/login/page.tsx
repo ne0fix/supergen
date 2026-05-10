@@ -4,8 +4,52 @@ import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Mail, Lock, Loader2, CheckCircle } from "lucide-react";
+import { Mail, Lock, Loader2, CheckCircle, X, MessageCircle } from "lucide-react";
 import { formatarCPF } from "@/src/utils/validators";
+
+const WHATSAPP_LOJA = "5585981058342";
+
+function ModalEsqueciPin({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+      <div
+        className="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-7 flex flex-col gap-5 animate-in fade-in zoom-in-95 duration-200"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-extrabold text-gray-900">Esqueci meu PIN</h2>
+            <p className="text-sm text-gray-500 mt-1">Precisamos verificar sua identidade</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1 -mt-1 -mr-1">
+            <X size={20} />
+          </button>
+        </div>
+
+        <p className="text-sm text-gray-600 leading-relaxed">
+          Para redefinir seu PIN, entre em contato com nossa equipe pelo WhatsApp. Informe seu <strong>nome completo</strong> e <strong>CPF cadastrado</strong> e faremos a verificação.
+        </p>
+
+        <a
+          href={`https://wa.me/${WHATSAPP_LOJA}?text=${encodeURIComponent("Olá! Esqueci meu PIN e preciso de ajuda para recuperar o acesso à minha conta.")}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2.5 bg-green-500 hover:bg-green-600 active:scale-[0.98] text-white font-bold py-4 rounded-2xl transition-all shadow-lg shadow-green-500/30 text-[15px]"
+        >
+          <MessageCircle size={20} />
+          Falar pelo WhatsApp
+        </a>
+
+        <button
+          onClick={onClose}
+          className="text-sm text-gray-400 hover:text-gray-600 transition-colors text-center font-medium"
+        >
+          Voltar ao login
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function LoginContent() {
   const router = useRouter();
@@ -19,6 +63,7 @@ function LoginContent() {
   const [salvarAcesso, setSalvarAcesso] = useState(true);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [modalPinAberto, setModalPinAberto] = useState(false);
 
   useEffect(() => {
     if (pin.length === 4 && cpf.replace(/\D/g, "").length === 11 && !carregando) {
@@ -52,12 +97,8 @@ function LoginContent() {
   };
 
   return (
-    /* ── Layout Mobile First ─────────────────────────────────────────────────
-     * min-h-screen + flex-col: a página cresce naturalmente com o conteúdo.
-     * Sem h-screen ou overflow-hidden — nada é cortado em telas pequenas.
-     * Gradiente verde do topo ao rodapé, card branco centralizado no meio.
-     * ──────────────────────────────────────────────────────────────────────── */
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-700 via-green-700 to-green-900">
+      {modalPinAberto && <ModalEsqueciPin onClose={() => setModalPinAberto(false)} />}
 
       {/* ── Área central: logo + card ── */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-10">
@@ -159,7 +200,7 @@ function LoginContent() {
                 </div>
                 <span className="text-xs font-semibold text-gray-600">Salvar acesso</span>
               </label>
-              <button type="button" className="text-xs font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors">
+              <button type="button" onClick={() => setModalPinAberto(true)} className="text-xs font-semibold text-green-600 hover:text-green-700 hover:underline transition-colors">
                 Esqueci meu PIN
               </button>
             </div>

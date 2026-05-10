@@ -28,24 +28,6 @@ export const metadata: Metadata = {
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="pt-BR" className="overflow-x-hidden">
-      <head>
-        {/* Open Graph — WhatsApp, Facebook, LinkedIn */}
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={BASE_URL} />
-        <meta property="og:site_name" content="Super G & N" />
-        <meta property="og:title" content="Super G & N | Supermercado Online" />
-        <meta property="og:description" content="Compre no Super G & N em Pacatuba, CE. Hortifruti, congelados, bebidas e muito mais. Entrega rápida!" />
-        <meta property="og:image" content={OG_IMAGE} />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Super G & N Supermercado Online" />
-        <meta property="og:locale" content="pt_BR" />
-        {/* Twitter / WhatsApp fallback */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Super G & N | Supermercado Online" />
-        <meta name="twitter:description" content="Compre no Super G & N em Pacatuba, CE. Entrega rápida!" />
-        <meta name="twitter:image" content={OG_IMAGE} />
-      </head>
       <body className="min-h-screen flex flex-col font-sans bg-white" suppressHydrationWarning>
         {children}
       </body>

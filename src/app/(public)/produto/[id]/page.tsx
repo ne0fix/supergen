@@ -7,7 +7,7 @@ import { useProdutoDetailViewModel, useProdutosRelacionados } from '@/src/viewmo
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import ProdutoCard from '@/src/components/ProdutoCard';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { ChevronRight, Heart, Minus, Plus, Share2, Star, ShoppingCart } from 'lucide-react';
+import { ChevronRight, Minus, Plus, Share2, Star, ShoppingCart } from 'lucide-react';
 import { ProdutoDetailSkeleton } from '@/src/components/ui/Skeleton';
 
 export default function ProdutoDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -143,9 +143,6 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
                 Produto Esgotado
               </div>
             )}
-            <button className="hidden sm:flex w-12 h-14 rounded-xl border border-gray-200 items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 hover:border-red-200 transition-colors flex-shrink-0">
-              <Heart size={20} />
-            </button>
           </div>
 
           {/* Detalhes */}
@@ -180,9 +177,8 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
       <div className="mb-10 lg:mb-16">
         <div className="flex border-b border-gray-200 overflow-x-auto hide-scrollbar gap-4 sm:gap-8">
           {[
-            { key: 'descricao',   label: 'Descrição' },
-            { key: 'nutritional', label: 'Nutricional' },
-            { key: 'reviews',     label: `Avaliações (${produto.numAvaliacoes})` },
+            { key: 'descricao', label: 'Descrição' },
+            { key: 'reviews',   label: `Avaliações (${produto.numAvaliacoes})` },
           ].map(tab => (
             <button
               key={tab.key}
@@ -199,38 +195,18 @@ export default function ProdutoDetailPage({ params }: { params: Promise<{ id: st
 
         <div className="py-6 text-gray-600 text-sm sm:text-base leading-relaxed max-w-3xl">
           {activeTab === 'descricao' && (
-            <div className="space-y-3">
-              <p>Este produto é selecionado com os mais altos padrões de qualidade. Garantimos frescor e sabor inigualáveis para você e sua família.</p>
-              <p>Nossos fornecedores são certificados e praticam produção responsável, entregando os melhores produtos diretamente na sua mesa.</p>
-              <ul className="list-disc pl-5 space-y-1.5 mt-3">
-                <li>Produto fresco e de qualidade superior</li>
-                <li>Rico em nutrientes e vitaminas essenciais</li>
-                <li>Embalagem sustentável e ecologicamente responsável</li>
-              </ul>
-            </div>
-          )}
-          {activeTab === 'nutritional' && (
-            <div className="grid grid-cols-2 gap-3 max-w-xs">
-              {[['Calorias', '45 kcal'], ['Carboidratos', '9g'], ['Açúcar', '6g'], ['Fibra', '3g'], ['Proteína', '1g']].map(([k, v]) => (
-                <div key={k} className="contents">
-                  <div className="font-semibold text-gray-700">{k}:</div>
-                  <div>{v}</div>
-                </div>
-              ))}
-            </div>
+            <p>{produto.descricao}</p>
           )}
           {activeTab === 'reviews' && (
-            <div className="space-y-5">
-              <div className="border-b border-gray-100 pb-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-bold text-gray-900">João Silva</span>
-                  <span className="text-xs text-gray-400">— 2 dias atrás</span>
-                </div>
-                <div className="flex text-yellow-400 mb-2">
-                  {[1,2,3,4,5].map(i => <Star key={i} size={14} className="fill-current" />)}
-                </div>
-                <p>Qualidade excepcional! Os produtos chegaram muito frescos e bem embalados. Comprarei novamente.</p>
+            <div className="flex flex-col items-center gap-3 py-6 text-center">
+              <div className="flex text-yellow-400 mb-1">
+                {[1,2,3,4,5].map(i => (
+                  <Star key={i} size={22} className={i <= Math.round(produto.avaliacao) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200 fill-gray-200'} />
+                ))}
               </div>
+              <p className="font-bold text-gray-800 text-lg">{produto.avaliacao} / 5</p>
+              <p className="text-gray-500 text-sm">Baseado em {produto.numAvaliacoes} avaliações</p>
+              <p className="text-gray-400 text-sm mt-2">Sistema de avaliações em breve.</p>
             </div>
           )}
         </div>

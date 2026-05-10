@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, MapPin, Clock, Camera, Tv, Share2 } from 'lucide-react';
+import { Phone, MapPin, Clock, Camera } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -40,15 +40,14 @@ export default function Footer() {
             <h4 className="text-white font-bold mb-5">Links Úteis</h4>
             <ul className="space-y-2.5 text-sm">
               {[
-                ['/', 'Sobre nós'],
-                ['/', 'Informações de entrega'],
-                ['/', 'Política de privacidade'],
-                ['/', 'Termos e condições'],
-                ['/', 'Fale Conosco'],
-                ['/', 'Rastrear pedido'],
+                ['/sobre', 'Sobre nós'],
+                ['/politica-de-privacidade', 'Política de privacidade'],
+                ['/termos', 'Termos e condições'],
+                ['https://wa.me/5585981058342?text=Ol%C3%A1%2C%20preciso%20de%20ajuda!', 'Fale Conosco'],
+                ['/cliente/pedidos', 'Rastrear pedido'],
               ].map(([href, label]) => (
                 <li key={label}>
-                  <Link href={href} className="hover:text-green-400 transition-colors">{label}</Link>
+                  <Link href={href} className="hover:text-green-400 transition-colors" {...(href.startsWith('https') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>{label}</Link>
                 </li>
               ))}
             </ul>
@@ -75,34 +74,23 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter */}
+          {/* Contato */}
           <div className="col-span-2 lg:col-span-1">
-            <h4 className="text-white font-bold mb-5">Receba Ofertas</h4>
+            <h4 className="text-white font-bold mb-5">Fale Conosco</h4>
             <p className="text-sm mb-4 leading-relaxed">
-              Cadastre-se e receba ofertas exclusivas, novidades e cupons direto no seu e-mail.
+              Dúvidas, sugestões ou precisa de ajuda? Nossa equipe está disponível pelo WhatsApp.
             </p>
-            <form className="flex flex-col gap-2" onSubmit={e => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                className="bg-gray-800 text-white px-4 py-3 rounded-lg outline-none border border-gray-700 focus:border-green-500 text-sm transition-colors"
-              />
-              <button
-                type="submit"
-                className="bg-green-600 hover:bg-green-500 text-white px-4 py-3 rounded-lg font-bold text-sm transition-colors"
-              >
-                Quero receber ofertas
-              </button>
-            </form>
+            <Link
+              href="https://wa.me/5585981058342?text=Ol%C3%A1%2C%20preciso%20de%20ajuda!"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-500 text-white px-4 py-3 rounded-lg font-bold text-sm transition-colors w-full"
+            >
+              <Phone size={14} /> Chamar no WhatsApp
+            </Link>
             <div className="flex gap-3 mt-5">
               <Link href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all">
                 <Camera size={16} />
-              </Link>
-              <Link href="/" className="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all">
-                <Share2 size={16} />
-              </Link>
-              <Link href="/" className="w-9 h-9 bg-gray-800 hover:bg-green-600 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all">
-                <Tv size={16} />
               </Link>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAdmin } from '@/src/viewmodels/admin.vm';
-import { ChevronRight, LogOut, Bell } from 'lucide-react';
+import { ChevronRight, LogOut } from 'lucide-react';
 
 const routeLabels: Record<string, string> = {
   dashboard:   'Dashboard',
@@ -57,11 +57,6 @@ export default function AdminTopBar() {
 
       {/* Direita */}
       <div className="flex items-center gap-3">
-        {/* Notificação (decorativo) */}
-        <button className="relative w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
-          <Bell size={18} />
-        </button>
-
         {/* Divisor */}
         <div className="w-px h-6 bg-gray-200" />
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useCarrinhoViewModel } from '../viewmodels/carrinho.vm';
-import { ShoppingCart, Heart, User, Search, Phone, MapPin, ChevronDown, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Search, Phone, MapPin, ChevronDown, Menu, X } from 'lucide-react';
 import { Categoria } from '../models/produto.model';
 import { ProdutoAPI } from '../services/api/produto.api';
 
@@ -96,11 +96,6 @@ export default function Header() {
               {clienteNome ? `Olá, ${clienteNome}` : "Conta"}
             </span>
           </Link>
-          {/* Favoritos — apenas desktop */}
-          <Link href="/" className="hidden sm:flex relative flex-col items-center gap-0.5 text-gray-600 hover:text-green-600 transition-colors p-2 rounded-lg hover:bg-gray-50">
-            <Heart size={20} />
-            <span className="hidden lg:block text-[10px] font-medium">Favoritos</span>
-          </Link>
           <Link href="/carrinho" className="relative flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white px-2 py-2 sm:px-3 sm:py-2.5 rounded-xl transition-colors">
             <div className="relative">
               <ShoppingCart size={20} />
@@ -183,9 +178,6 @@ export default function Header() {
               >
                 <User size={18} className={clienteNome ? "text-green-600" : ""} /> 
                 {clienteNome ? `Olá, ${clienteNome}` : "Minha Conta"}
-              </Link>
-              <Link href="/" onClick={() => setMenuAberto(false)} className="flex items-center gap-2 text-sm text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-50 flex-1 justify-center">
-                <Heart size={18} /> Favoritos
               </Link>
             </div>
           </div>

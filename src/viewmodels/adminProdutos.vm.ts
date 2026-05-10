@@ -55,8 +55,7 @@ export function useAdminProdutos(): UseAdminProdutosReturn {
     }, [fetchProdutos]);
 
     const toggleEstoque = async (id: string, emEstoque: boolean) => {
-        // Optimistic update
-        setProdutos(produtos.map(p => p.id === id ? { ...p, emEstoque } : p));
+        setProdutos(prev => prev.map(p => p.id === id ? { ...p, emEstoque } : p));
         try {
             await fetch(`/api/admin/produtos/${id}/estoque`, {
                 method: 'PATCH',
@@ -64,8 +63,7 @@ export function useAdminProdutos(): UseAdminProdutosReturn {
                 body: JSON.stringify({ emEstoque }),
             });
         } catch (error) {
-            // Revert on error
-            setProdutos(produtos.map(p => p.id === id ? { ...p, emEstoque: !emEstoque } : p));
+            setProdutos(prev => prev.map(p => p.id === id ? { ...p, emEstoque: !emEstoque } : p));
             console.error("Falha ao atualizar estoque:", error);
         }
     };
