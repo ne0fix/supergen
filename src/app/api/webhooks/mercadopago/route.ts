@@ -79,13 +79,21 @@ export async function POST(req: NextRequest) {
 
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, statusCliente: true },
   });
 
   if (!order) return NextResponse.json({ received: true });
 
-  // Idempotência — não reprocessar pedidos já finalizados
-  if (order.status === 'PAID' || order.status === 'CANCELLED') {
+  // Idempotência — pula apenas se status E statusCliente já estão no estado final correto
+  const statusClienteEsperado = order.status === 'PAID'
+    ? ['EM_SEPARACAO', 'LIBERADO']
+    : order.status === 'FAILED' || order.status === 'CANCELLED'
+      ? ['CANCELADO']
+      : [];
+
+  const statusClienteOk = statusClienteEsperado.includes(order.statusCliente as string);
+
+  if ((order.status === 'PAID' || order.status === 'CANCELLED') && statusClienteOk) {
     return NextResponse.json({ received: true });
   }
 

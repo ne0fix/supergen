@@ -19,10 +19,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: 'Pedido não encontrado' }, { status: 404 });
     }
 
+    // Derivação defensiva: se o status de pagamento avançou mas statusCliente ficou preso
+    const statusClienteEfetivo = (() => {
+      if (p.status === 'PAID' && (p.statusCliente === 'PEDIDO_REALIZADO' || p.statusCliente === 'PAGAMENTO_PROCESSANDO')) {
+        return 'EM_SEPARACAO';
+      }
+      if ((p.status === 'FAILED' || p.status === 'CANCELLED') && p.statusCliente === 'PEDIDO_REALIZADO') {
+        return 'CANCELADO';
+      }
+      return p.statusCliente;
+    })();
+
     return NextResponse.json({
       id: p.id,
       numero: p.id.slice(-8).toUpperCase(),
-      statusCliente: p.statusCliente,
+      statusCliente: statusClienteEfetivo,
       total: parseFloat(p.total.toString()),
       subtotal: parseFloat(p.subtotal.toString()),
       frete: parseFloat(p.frete.toString()),

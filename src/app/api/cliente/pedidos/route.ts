@@ -32,15 +32,26 @@ export async function GET(req: NextRequest) {
       prisma.order.count({ where }),
     ]);
 
-    const pedidos = pedidosRaw.map(p => ({
-      id: p.id,
-      numero: p.id.slice(-8).toUpperCase(),
-      total: parseFloat(p.total.toString()),
-      metodoPagamento: p.metodoPagamento,
-      statusCliente: p.statusCliente,
-      criadoEm: p.criadoEm,
-      itens: p._count.items,
-    }));
+    const pedidos = pedidosRaw.map(p => {
+      const statusClienteEfetivo = (() => {
+        if (p.status === 'PAID' && (p.statusCliente === 'PEDIDO_REALIZADO' || p.statusCliente === 'PAGAMENTO_PROCESSANDO')) {
+          return 'EM_SEPARACAO';
+        }
+        if ((p.status === 'FAILED' || p.status === 'CANCELLED') && p.statusCliente === 'PEDIDO_REALIZADO') {
+          return 'CANCELADO';
+        }
+        return p.statusCliente;
+      })();
+      return {
+        id: p.id,
+        numero: p.id.slice(-8).toUpperCase(),
+        total: parseFloat(p.total.toString()),
+        metodoPagamento: p.metodoPagamento,
+        statusCliente: statusClienteEfetivo,
+        criadoEm: p.criadoEm,
+        itens: p._count.items,
+      };
+    });
 
     return NextResponse.json({
       pedidos,
