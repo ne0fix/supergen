@@ -54,9 +54,7 @@ export default function PedidoDetalhePage() {
   useEffect(() => {
     fetch(`/api/cliente/pedidos/${id}`)
       .then(res => res.json())
-      .then(data => {
-        if (data.id) setPedido(data);
-      })
+      .then(data => { if (data.id) setPedido(data); })
       .catch(err => console.error(err))
       .finally(() => setCarregando(false));
   }, [id]);
@@ -79,7 +77,7 @@ export default function PedidoDetalhePage() {
 
   if (!pedido) {
     return (
-      <div className="text-center py-20 space-y-4">
+      <div className="text-center py-16 space-y-4">
         <p className="text-gray-500 font-bold">Pedido não encontrado.</p>
         <Link href="/cliente/pedidos" className="text-green-600 font-bold hover:underline">
           Voltar para meus pedidos
@@ -89,77 +87,83 @@ export default function PedidoDetalhePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-5">
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 font-medium transition-colors">
-          <ChevronLeft size={20} />
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1 text-sm text-gray-500 hover:text-green-600 font-medium transition-colors"
+        >
+          <ChevronLeft size={18} />
           Voltar
         </button>
         <div className="text-right">
-          <p className="text-xs text-gray-400 uppercase font-black tracking-widest">Pedido</p>
-          <p className="text-lg font-black text-gray-900">#{pedido.numero}</p>
+          <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Pedido</p>
+          <p className="text-base font-black text-gray-900">#{pedido.numero}</p>
         </div>
       </div>
 
       {/* Status e Timeline */}
-      <section className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+      <section className="bg-white rounded-xl border border-gray-100 p-3 sm:p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="space-y-1">
-            <p className="text-xs sm:text-sm text-gray-500">
+            <p className="text-xs text-gray-500">
               Realizado em {new Date(pedido.criadoEm).toLocaleDateString('pt-BR')} às {new Date(pedido.criadoEm).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
             </p>
-            <div className="mt-1">
+            <div className="mt-0.5">
               <StatusBadge status={pedido.statusCliente} />
             </div>
           </div>
           {pedido.pagoEm && (
-            <div className="bg-green-50 px-3 py-2 rounded-xl flex items-center gap-2 self-start sm:self-auto">
-              <CheckCircle2 size={16} className="text-green-600" />
-              <span className="text-[11px] sm:text-xs font-bold text-green-700">Pago em {new Date(pedido.pagoEm).toLocaleDateString('pt-BR')}</span>
+            <div className="bg-green-50 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 self-start sm:self-auto">
+              <CheckCircle2 size={13} className="text-green-600 flex-shrink-0" />
+              <span className="text-[10px] font-bold text-green-700">
+                Pago em {new Date(pedido.pagoEm).toLocaleDateString('pt-BR')}
+              </span>
             </div>
           )}
         </div>
 
-        <div className="pt-4 border-t border-gray-100">
-          <p className="text-[11px] sm:text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 sm:mb-4">Progresso do Pedido</p>
-          <div className="overflow-hidden sm:overflow-visible">
+        <div className="pt-3 border-t border-gray-100">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Progresso do Pedido</p>
+          <div className="overflow-hidden">
             <OrderTimeline statusAtual={pedido.statusCliente} entregaTipo={pedido.entregaTipo} />
           </div>
         </div>
       </section>
 
       {/* PIX Pendente */}
-      {(pedido.statusCliente === 'PEDIDO_REALIZADO' || pedido.statusCliente === 'PAGAMENTO_PROCESSANDO') && pedido.metodoPagamento === 'PIX' && pedido.mpQrCode && (
-        <section className="bg-green-600 text-white rounded-2xl p-4 sm:p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <QrCode size={24} className="sm:w-7 sm:h-7" />
-            <h3 className="text-lg sm:text-xl font-black">Aguardando Pagamento</h3>
+      {(pedido.statusCliente === 'PEDIDO_REALIZADO' || pedido.statusCliente === 'PAGAMENTO_PROCESSANDO') &&
+        pedido.metodoPagamento === 'PIX' && pedido.mpQrCode && (
+        <section className="bg-green-600 text-white rounded-xl p-3 sm:p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <QrCode size={20} />
+            <h3 className="text-base font-black">Aguardando Pagamento</h3>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 bg-white/10 p-4 rounded-2xl border border-white/20">
+          <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-6 bg-white/10 p-3 rounded-xl border border-white/20">
             {pedido.mpQrCodeBase64 && (
-              <div className="bg-white p-2 rounded-xl flex-shrink-0">
+              <div className="bg-white p-1.5 rounded-lg flex-shrink-0">
                 <Image
                   src={`data:image/png;base64,${pedido.mpQrCodeBase64}`}
                   alt="QR Code PIX"
-                  width={140}
-                  height={140}
-                  className="rounded-lg w-32 h-32 sm:w-[150px] sm:h-[150px]"
+                  width={110}
+                  height={110}
+                  className="rounded-md w-24 h-24 sm:w-[130px] sm:h-[130px]"
                 />
               </div>
             )}
-            <div className="flex-1 space-y-4 text-center sm:text-left">
-              <p className="text-sm font-medium text-white/90">
-                Escaneie o QR Code ao lado ou copie o código abaixo para pagar no app do seu banco.
+            <div className="flex-1 min-w-0 space-y-3 text-center sm:text-left">
+              <p className="text-xs font-medium text-white/90">
+                Escaneie o QR Code ou copie o código abaixo para pagar no app do seu banco.
               </p>
               <button
                 onClick={handleCopiarPix}
-                className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all min-h-[44px]
+                className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg font-bold transition-all min-h-[44px] text-sm
                   ${copiado ? 'bg-white text-green-600' : 'bg-green-500 hover:bg-green-400 text-white'}`}
               >
-                {copiado ? <CheckCircle2 size={20} /> : <Copy size={20} />}
+                {copiado ? <CheckCircle2 size={17} /> : <Copy size={17} />}
                 {copiado ? 'CÓDIGO COPIADO!' : 'COPIAR CÓDIGO PIX'}
               </button>
             </div>
@@ -167,95 +171,91 @@ export default function PedidoDetalhePage() {
         </section>
       )}
 
-      <div className="space-y-6">
-
-        {/* Itens */}
-        <section className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-gray-100">
-            <h3 className="font-bold text-gray-900 flex items-center gap-2">
-              <Package size={18} className="text-gray-400" />
-              Itens do Pedido
-            </h3>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {pedido.items.map(item => (
-              <div key={item.id} className="p-4 flex items-center gap-3">
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border border-gray-100 flex-shrink-0">
-                  <Image src={item.imagemProduto} alt={item.nomeProduto} fill className="object-cover" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-gray-900 truncate">{item.nomeProduto}</p>
-                  <p className="text-xs text-gray-500">{item.quantidade} × {formatarMoeda(item.preco)}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-gray-900">{formatarMoeda(item.subtotal)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="bg-gray-50 p-4 sm:p-5 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Subtotal</span>
-              <span>{formatarMoeda(pedido.subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Frete</span>
-              <span>{pedido.frete === 0 ? 'Grátis' : formatarMoeda(pedido.frete)}</span>
-            </div>
-            <div className="flex justify-between text-lg font-black text-gray-900 pt-2 border-t border-gray-200 mt-2">
-              <span>Total</span>
-              <span className="text-green-600">{formatarMoeda(pedido.total)}</span>
-            </div>
-          </div>
-        </section>
-
-        {/* Informações Extras (Accordions em Mobile) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-
-          {/* Pagamento */}
-          <details className="group bg-white rounded-2xl border border-gray-100 overflow-hidden" open>
-            <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
-                <CreditCard size={18} /> Pagamento
-              </h3>
-              <span className="transition group-open:rotate-180">
-                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-              </span>
-            </summary>
-            <div className="p-4 sm:p-5 pt-0 border-t border-gray-100 text-sm">
-              <p className="font-bold text-gray-900">{pedido.metodoPagamento}</p>
-              <p className="text-xs text-gray-500 mt-1">Processado via Mercado Pago</p>
-            </div>
-          </details>
-
-          {/* Entrega */}
-          <details className="group bg-white rounded-2xl border border-gray-100 overflow-hidden" open>
-            <summary className="p-4 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm uppercase tracking-wider text-gray-500">
-                <MapPin size={18} /> Entrega
-              </h3>
-              <span className="transition group-open:rotate-180">
-                <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-              </span>
-            </summary>
-            <div className="p-4 sm:p-5 pt-0 border-t border-gray-100 text-sm">
-              {pedido.entregaTipo === 'RETIRADA' ? (
-                <div>
-                  <p className="font-bold text-gray-900">Retirada em Loja</p>
-                  <p className="text-xs text-gray-500 mt-1">Aguarde o status "Liberado"</p>
-                </div>
-              ) : (
-                <div className="text-gray-700 leading-relaxed">
-                  <p className="font-bold text-gray-900">{pedido.endereco.logradouro}, {pedido.endereco.numero}</p>
-                  <p>{pedido.endereco.bairro}</p>
-                  <p>{pedido.endereco.cidade} - {pedido.endereco.uf}</p>
-                  <p className="text-xs text-gray-500 mt-1">CEP: {pedido.endereco.cep}</p>
-                </div>
-              )}
-            </div>
-          </details>
-
+      {/* Itens do Pedido */}
+      <section className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div className="p-3 sm:p-5 border-b border-gray-100">
+          <h3 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+            <Package size={16} className="text-gray-400" />
+            Itens do Pedido
+          </h3>
         </div>
+
+        <div className="divide-y divide-gray-100">
+          {pedido.items.map(item => (
+            <div key={item.id} className="p-3 flex items-center gap-2.5">
+              <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden border border-gray-100 flex-shrink-0">
+                <Image src={item.imagemProduto} alt={item.nomeProduto} fill className="object-cover" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-900 truncate">{item.nomeProduto}</p>
+                <p className="text-xs text-gray-500">{item.quantidade} × {formatarMoeda(item.preco)}</p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-bold text-gray-900">{formatarMoeda(item.subtotal)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-gray-50 p-3 sm:p-5 space-y-1.5">
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Subtotal</span>
+            <span>{formatarMoeda(pedido.subtotal)}</span>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Frete</span>
+            <span>{pedido.frete === 0 ? 'Grátis' : formatarMoeda(pedido.frete)}</span>
+          </div>
+          <div className="flex justify-between text-base font-black text-gray-900 pt-2 border-t border-gray-200">
+            <span>Total</span>
+            <span className="text-green-600">{formatarMoeda(pedido.total)}</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Pagamento e Entrega */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden" open>
+          <summary className="p-3 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
+            <h3 className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
+              <CreditCard size={15} /> Pagamento
+            </h3>
+            <span className="transition-transform group-open:rotate-180 text-gray-400">
+              <svg fill="none" height="18" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="18"><path d="M6 9l6 6 6-6" /></svg>
+            </span>
+          </summary>
+          <div className="p-3 sm:p-5 pt-0 border-t border-gray-100 text-sm">
+            <p className="font-bold text-gray-900">{pedido.metodoPagamento}</p>
+            <p className="text-xs text-gray-500 mt-1">Processado via Mercado Pago</p>
+          </div>
+        </details>
+
+        <details className="group bg-white rounded-xl border border-gray-100 overflow-hidden" open>
+          <summary className="p-3 sm:p-5 flex items-center justify-between cursor-pointer list-none select-none min-h-[44px]">
+            <h3 className="font-bold flex items-center gap-2 text-xs uppercase tracking-wider text-gray-500">
+              <MapPin size={15} /> Entrega
+            </h3>
+            <span className="transition-transform group-open:rotate-180 text-gray-400">
+              <svg fill="none" height="18" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="18"><path d="M6 9l6 6 6-6" /></svg>
+            </span>
+          </summary>
+          <div className="p-3 sm:p-5 pt-0 border-t border-gray-100 text-sm">
+            {pedido.entregaTipo === 'RETIRADA' ? (
+              <div>
+                <p className="font-bold text-gray-900">Retirada em Loja</p>
+                <p className="text-xs text-gray-500 mt-1">Aguarde o status &quot;Liberado&quot;</p>
+              </div>
+            ) : (
+              <div className="text-gray-700 leading-relaxed text-sm">
+                <p className="font-bold text-gray-900">{pedido.endereco.logradouro}, {pedido.endereco.numero}</p>
+                <p>{pedido.endereco.bairro}</p>
+                <p>{pedido.endereco.cidade} - {pedido.endereco.uf}</p>
+                <p className="text-xs text-gray-500 mt-1">CEP: {pedido.endereco.cep}</p>
+              </div>
+            )}
+          </div>
+        </details>
 
       </div>
 
