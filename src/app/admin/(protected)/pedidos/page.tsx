@@ -2,38 +2,67 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Loader2, Printer, ArrowRight } from 'lucide-react';
-import { AdminTableSkeleton } from '@/src/components/ui/Skeleton';
-import { ColumnDef } from '@/src/components/admin/ui/DataTable';
-import DataTable from '@/src/components/admin/ui/DataTable';
-import Badge from '@/src/components/admin/ui/Badge';
+import {
+  Loader2, Printer, ArrowRight, X, Package,
+  User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag,
+} from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
 
-const STATUS_CONFIG: Record<string, { label: string; variant: any }> = {
-  PENDING_PAYMENT: { label: 'Aguardando', variant: 'warning' },
-  PROCESSING:      { label: 'Processando', variant: 'info' },
-  PAID:            { label: 'Pago',        variant: 'success' },
-  FAILED:          { label: 'Falhou',      variant: 'danger' },
-  CANCELLED:       { label: 'Cancelado',   variant: 'default' },
+// ─── Config de status ────────────────────────────────────────────────────────
+
+const STATUS_PAG: Record<string, { label: string; bg: string; text: string; dot: string; iconBg: string }> = {
+  PENDING_PAYMENT: { label: 'Aguardando',  bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-400', iconBg: 'bg-yellow-50' },
+  PROCESSING:      { label: 'Processando', bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-400',   iconBg: 'bg-blue-50'   },
+  PAID:            { label: 'Pago',        bg: 'bg-green-50',  text: 'text-green-700',  dot: 'bg-green-500',  iconBg: 'bg-green-50'  },
+  FAILED:          { label: 'Falhou',      bg: 'bg-red-50',    text: 'text-red-700',    dot: 'bg-red-400',    iconBg: 'bg-red-50'    },
+  CANCELLED:       { label: 'Cancelado',   bg: 'bg-gray-100',  text: 'text-gray-600',   dot: 'bg-gray-400',   iconBg: 'bg-gray-100'  },
 };
 
-export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, onClose: () => void }) {
+const STATUS_CLI: Record<string, { label: string; bg: string; text: string }> = {
+  PEDIDO_REALIZADO:      { label: 'Pedido Realizado',  bg: 'bg-gray-100',   text: 'text-gray-700'   },
+  PAGAMENTO_PROCESSANDO: { label: 'Pag. Processando',  bg: 'bg-yellow-100', text: 'text-yellow-700' },
+  EM_SEPARACAO:          { label: 'Em Separação',      bg: 'bg-orange-100', text: 'text-orange-700' },
+  LIBERADO:              { label: 'Liberado',          bg: 'bg-green-100',  text: 'text-green-700'  },
+  CANCELADO:             { label: 'Cancelado',         bg: 'bg-red-100',    text: 'text-red-700'    },
+};
+
+function PagBadge({ status }: { status: string }) {
+  const s = STATUS_PAG[status] ?? { label: status, bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400', iconBg: 'bg-gray-100' };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${s.bg} ${s.text}`}>
+      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${s.dot}`} />
+      {s.label}
+    </span>
+  );
+}
+
+function CliBadge({ status }: { status?: string }) {
+  if (!status) return null;
+  const s = STATUS_CLI[status] ?? { label: status, bg: 'bg-gray-100', text: 'text-gray-600' };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${s.bg} ${s.text}`}>
+      {s.label}
+    </span>
+  );
+}
+
+// ─── Modal ────────────────────────────────────────────────────────────────────
+
+export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; onClose: () => void }) {
   const [pedido, setPedido] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [avancando, setAvançando] = useState(false);
+  const [avancando, setAvancando] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/pedidos/${pedidoId}`)
       .then(r => r.json())
-      .then(data => {
-        setPedido(data);
-        setLoading(false);
-      })
+      .then(data => { setPedido(data); setLoading(false); })
       .catch(() => setLoading(false));
   }, [pedidoId]);
 
   const imprimirCupom = () => {
+    if (!pedido) return;
     const w = window.open('', '_blank', 'width=400,height=600');
     if (!w) return;
     w.document.write(`
@@ -43,37 +72,22 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, o
           <style>
             @page { margin: 0; }
             body { font-family: monospace; width: 80mm; margin: 0 auto; padding: 10px; font-size: 12px; }
-            .text-center { text-align: center; }
-            .bold { font-weight: bold; }
-            .border-b { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-            .flex-between { display: flex; justify-content: space-between; }
-            .mb-2 { margin-bottom: 10px; }
+            .center { text-align: center; } .bold { font-weight: bold; }
+            .sep { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+            .row { display: flex; justify-content: space-between; }
           </style>
         </head>
         <body>
-          <div class="text-center bold border-b">
-            EKOMART<br>
-            Pedido #${pedido.id.slice(-8).toUpperCase()}
-          </div>
-          <div class="border-b mb-2">
+          <div class="center bold sep">EKOMART<br>Pedido #${pedido.id.slice(-8).toUpperCase()}</div>
+          <div class="sep">
             Cliente: ${pedido.compradorNome}<br>
             Data: ${new Date(pedido.criadoEm).toLocaleString('pt-BR')}
           </div>
-          <div class="border-b mb-2">
-            ${pedido.items.map((i: any) => `
-              <div class="flex-between">
-                <span>${i.quantidade}x ${i.nomeProduto.substring(0, 15)}</span>
-                <span>${formatarMoeda(i.subtotal)}</span>
-              </div>
-            `).join('')}
+          <div class="sep">
+            ${pedido.items.map((i: any) => `<div class="row"><span>${i.quantidade}x ${i.nomeProduto.substring(0, 18)}</span><span>${formatarMoeda(i.subtotal)}</span></div>`).join('')}
           </div>
-          <div class="flex-between bold">
-            <span>TOTAL</span>
-            <span>${formatarMoeda(pedido.total)}</span>
-          </div>
-          <script>
-            window.onload = () => { window.print(); window.close(); }
-          </script>
+          <div class="row bold"><span>TOTAL</span><span>${formatarMoeda(pedido.total)}</span></div>
+          <script>window.onload = () => { window.print(); window.close(); }</script>
         </body>
       </html>
     `);
@@ -82,157 +96,239 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, o
 
   const avancarStatus = async () => {
     if (!pedido || pedido.statusCliente !== 'EM_SEPARACAO') return;
-    setAvançando(true);
+    setAvancando(true);
     try {
       const res = await fetch(`/api/admin/pedidos/${pedidoId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ statusCliente: 'LIBERADO' })
+        body: JSON.stringify({ statusCliente: 'LIBERADO' }),
       });
-      if (res.ok) {
-        setPedido({ ...pedido, statusCliente: 'LIBERADO' });
-      }
+      if (res.ok) setPedido({ ...pedido, statusCliente: 'LIBERADO' });
     } catch (e) {
       console.error(e);
     } finally {
-      setAvançando(false);
+      setAvancando(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Detalhes do Pedido <span className="text-gray-500">#{pedidoId.slice(-8).toUpperCase()}</span></h2>
-          <div className="flex gap-2">
-            <button onClick={imprimirCupom} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors text-sm">
-              <Printer size={16} /> Imprimir Cupom
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+
+        {/* Header fixo */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+          <div>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pedido</p>
+            <h2 className="text-xl font-bold text-gray-900">#{pedidoId.slice(-8).toUpperCase()}</h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={imprimirCupom}
+              disabled={!pedido}
+              className="flex items-center gap-1.5 px-3 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-colors disabled:opacity-40"
+            >
+              <Printer size={14} /> Imprimir
             </button>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-800 px-4 py-2">Fechar</button>
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 rounded-xl transition-colors"
+            >
+              <X size={17} />
+            </button>
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center p-8"><Loader2 className="animate-spin text-green-600" size={24} /></div>
-        ) : !pedido ? (
-          <p className="text-red-500">Erro ao carregar detalhes.</p>
-        ) : (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Dados do Cliente */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <h3 className="font-bold mb-3 text-gray-900 border-b pb-2">Dados do Cliente</h3>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p><span className="font-semibold">Nome:</span> {pedido.compradorNome}</p>
-                  <p><span className="font-semibold">E-mail:</span> {pedido.compradorEmail}</p>
-                  <p><span className="font-semibold">CPF:</span> {pedido.compradorCpf}</p>
-                  <p><span className="font-semibold">Telefone:</span> {pedido.compradorTelefone}</p>
-                  {pedido.cliente && (
-                    <div className="mt-2 pt-2 border-t text-xs text-blue-600">Cliente cadastrado no sistema</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Dados de Pagamento */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <h3 className="font-bold mb-3 text-gray-900 border-b pb-2">Pagamento e Entrega</h3>
-                <div className="space-y-2 text-sm text-gray-700">
-                  <p><span className="font-semibold">Método:</span> {pedido.metodoPagamento}</p>
-                  <p><span className="font-semibold">Status:</span> {STATUS_CONFIG[pedido.status]?.label || pedido.status}</p>
-                  <p><span className="font-semibold">Tipo de Entrega:</span> {pedido.entregaTipo}</p>
-                  {pedido.entregaTipo === 'ENTREGA' && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      {pedido.logradouro}, {pedido.numero} {pedido.complemento ? `- ${pedido.complemento}` : ''}<br/>
-                      {pedido.bairro}, {pedido.cidade} - {pedido.uf} | CEP: {pedido.cep}
-                    </p>
-                  )}
-                  <p><span className="font-semibold mt-2 block">Total:</span> <span className="text-green-600 font-bold">{formatarMoeda(pedido.total)}</span></p>
-                </div>
-              </div>
+        {/* Conteúdo scrollável */}
+        <div className="overflow-y-auto flex-1">
+          {loading ? (
+            <div className="flex justify-center p-12">
+              <Loader2 className="animate-spin text-green-600" size={28} />
             </div>
+          ) : !pedido ? (
+            <p className="text-red-500 text-sm p-6">Erro ao carregar os detalhes do pedido.</p>
+          ) : (
+            <div className="p-5 space-y-4">
 
-            {/* Progresso do Pedido */}
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex flex-col gap-4">
-              <h3 className="font-bold text-gray-900">Progresso do Pedido</h3>
-              <div className="w-full">
-                <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
-              </div>
-              {pedido.statusCliente === 'EM_SEPARACAO' && (
-                <div className="flex justify-end pt-2">
-                  <button 
-                    onClick={avancarStatus} 
-                    disabled={avancando}
-                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-lg transition-colors text-sm"
-                  >
-                    {avancando ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
-                    {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
-                  </button>
-                </div>
-              )}
-            </div>
+              {/* Grid: comprador + pagamento */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Itens do Pedido */}
-            <div>
-              <h3 className="font-bold mb-3 text-gray-900">Itens do Pedido</h3>
-              <div className="divide-y border rounded-xl overflow-hidden border-gray-200">
-                {pedido.items?.map((item: any) => (
-                  <div key={item.id} className="flex justify-between items-center p-4 bg-white hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        {item.imagemProduto && <img src={item.imagemProduto} alt={item.nomeProduto} className="w-full h-full object-contain p-1" />}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm text-gray-900">{item.nomeProduto}</p>
-                        <p className="text-xs text-gray-500">{formatarMoeda(item.preco)} un.</p>
-                      </div>
+                {/* Comprador */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
+                    <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                      <User size={14} className="text-blue-600" />
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-gray-900 text-sm">{formatarMoeda(item.subtotal)}</p>
-                      <p className="text-xs text-gray-500">Qtd: {item.quantidade}</p>
-                    </div>
+                    <h3 className="text-sm font-bold text-gray-900">Comprador</h3>
                   </div>
-                ))}
+                  <div className="space-y-1.5">
+                    <p className="text-sm font-semibold text-gray-900">{pedido.compradorNome}</p>
+                    <p className="text-xs text-gray-500">{pedido.compradorEmail}</p>
+                    <p className="text-xs text-gray-500">CPF: {pedido.compradorCpf}</p>
+                    <p className="text-xs text-gray-500">Tel: {pedido.compradorTelefone}</p>
+                    {pedido.cliente && (
+                      <span className="inline-block mt-1 text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
+                        Cliente cadastrado
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pagamento e Entrega */}
+                <div className="bg-white rounded-xl border border-gray-100 p-4">
+                  <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
+                    <div className="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                      <CreditCard size={14} className="text-green-600" />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900">Pagamento & Entrega</h3>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Método</span>
+                      <span className="text-xs font-semibold text-gray-900">{pedido.metodoPagamento}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Status Pagamento</span>
+                      <PagBadge status={pedido.status} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Status Pedido</span>
+                      <CliBadge status={pedido.statusCliente} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">Tipo Entrega</span>
+                      <span className="text-xs font-semibold text-gray-900">{pedido.entregaTipo}</span>
+                    </div>
+                    {pedido.entregaTipo === 'ENTREGA' && (
+                      <div className="mt-1 pt-2 border-t border-gray-50">
+                        <div className="flex items-start gap-1.5">
+                          <MapPin size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-[11px] text-gray-500 leading-relaxed">
+                            {pedido.logradouro}, {pedido.numero}{pedido.complemento ? ` - ${pedido.complemento}` : ''}<br />
+                            {pedido.bairro}, {pedido.cidade} - {pedido.uf}<br />
+                            CEP: {pedido.cep}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 text-right space-y-1 text-sm">
-                <p className="text-gray-500">Subtotal: {formatarMoeda(pedido.subtotal)}</p>
-                <p className="text-gray-500">Frete: {formatarMoeda(pedido.frete)}</p>
-                <p className="font-bold text-gray-900 text-lg">Total: {formatarMoeda(pedido.total)}</p>
+
+              {/* Progresso */}
+              <div className="bg-white rounded-xl border border-gray-100 p-4">
+                <div className="flex items-center gap-2 mb-3 pb-2.5 border-b border-gray-50">
+                  <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center flex-shrink-0">
+                    <Package size={14} className="text-violet-600" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900">Progresso do Pedido</h3>
+                </div>
+                <OrderTimeline statusAtual={pedido.statusCliente ?? pedido.status} entregaTipo={pedido.entregaTipo} />
+                {pedido.statusCliente === 'EM_SEPARACAO' && (
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      onClick={avancarStatus}
+                      disabled={avancando}
+                      className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-lg shadow-green-600/25 hover:-translate-y-0.5"
+                    >
+                      {avancando ? <Loader2 size={14} className="animate-spin" /> : <ArrowRight size={14} />}
+                      {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {/* Itens */}
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-50">
+                  <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                    <ShoppingBag size={14} className="text-orange-500" />
+                  </div>
+                  <h3 className="text-sm font-bold text-gray-900">Itens do Pedido</h3>
+                </div>
+                <div className="divide-y divide-gray-50">
+                  {pedido.items?.map((item: any) => (
+                    <div key={item.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/60 transition-colors">
+                      <div className="w-10 h-10 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 border border-gray-100">
+                        {item.imagemProduto && (
+                          <img src={item.imagemProduto} alt={item.nomeProduto} className="w-full h-full object-contain p-1" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 truncate">{item.nomeProduto}</p>
+                        <p className="text-xs text-gray-400">{item.quantidade}× {formatarMoeda(item.preco)}</p>
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 flex-shrink-0">{formatarMoeda(item.subtotal)}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-gray-50/60 px-4 py-3 space-y-1.5">
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Subtotal</span>
+                    <span>{formatarMoeda(pedido.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>Frete</span>
+                    <span>{pedido.frete === 0 ? 'Grátis' : formatarMoeda(pedido.frete)}</span>
+                  </div>
+                  <div className="flex justify-between text-base font-bold text-gray-900 pt-1.5 border-t border-gray-200">
+                    <span>Total</span>
+                    <span className="text-green-600">{formatarMoeda(pedido.total)}</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
+// ─── Filtros ──────────────────────────────────────────────────────────────────
+
+const FILTROS = [
+  { value: '',               label: 'Todos'       },
+  { value: 'PENDING_PAYMENT', label: 'Aguardando'  },
+  { value: 'PROCESSING',      label: 'Processando' },
+  { value: 'PAID',            label: 'Pago'        },
+  { value: 'FAILED',          label: 'Falhou'      },
+  { value: 'CANCELLED',       label: 'Cancelado'   },
+];
+
 function PageFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const atual = searchParams.get('status') ?? '';
 
-  const set = (key: string, value: string) => {
+  const set = (value: string) => {
     const p = new URLSearchParams(searchParams.toString());
-    value ? p.set(key, value) : p.delete(key);
+    value ? p.set('status', value) : p.delete('status');
     p.set('page', '1');
     router.push(`${pathname}?${p.toString()}`);
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <select
-        value={searchParams.get('status') || ''}
-        onChange={(e) => set('status', e.target.value)}
-        className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-green-500"
-      >
-        <option value="">Todos os status</option>
-        {Object.entries(STATUS_CONFIG).map(([val, { label }]) => (
-          <option key={val} value={val}>{label}</option>
-        ))}
-      </select>
+    <div className="flex flex-wrap gap-2">
+      {FILTROS.map(f => (
+        <button
+          key={f.value}
+          onClick={() => set(f.value)}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            atual === f.value
+              ? 'bg-green-600 text-white shadow-lg shadow-green-600/20'
+              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+          }`}
+        >
+          {f.label}
+        </button>
+      ))}
     </div>
   );
 }
+
+// ─── Lista principal ──────────────────────────────────────────────────────────
 
 function PedidosContent() {
   const router = useRouter();
@@ -266,80 +362,121 @@ function PedidosContent() {
     router.push(`${pathname}?${p.toString()}`);
   };
 
-  const columns: ColumnDef<any>[] = [
-    {
-      header: 'Pedido',
-      accessor: 'id',
-      cell: (id) => <span className="font-mono text-xs text-gray-500">#{(id as string).slice(-8).toUpperCase()}</span>,
-    },
-    {
-      header: 'Data',
-      accessor: 'criadoEm',
-      cell: (val) => <span className="text-xs">{new Date(val as string).toLocaleString('pt-BR')}</span>,
-    },
-    {
-      header: 'Comprador',
-      accessor: 'compradorNome',
-      cell: (val, row) => (
-        <div>
-          <p className="font-medium text-sm text-gray-900">{val as string}</p>
-          <p className="text-xs text-gray-400">{row.compradorEmail}</p>
-        </div>
-      ),
-    },
-    {
-      header: 'Total',
-      accessor: 'total',
-      cell: (val) => <span className="font-bold text-gray-900">{formatarMoeda(val as number)}</span>,
-    },
-    {
-      header: 'Método',
-      accessor: 'metodoPagamento',
-      cell: (val) => <span className="text-xs font-medium text-gray-500">{val as string}</span>,
-    },
-    {
-      header: 'Status',
-      accessor: 'status',
-      cell: (val) => {
-        const config = STATUS_CONFIG[val as string] || { label: val, variant: 'default' };
-        return <Badge label={config.label} variant={config.variant} />;
-      },
-    },
-    {
-      header: 'Ações',
-      accessor: 'id',
-      cell: (id) => (
-        <button
-          onClick={() => setPedidoSelecionado(id as string)}
-          className="text-xs font-medium text-green-600 hover:text-green-700 bg-green-50 px-3 py-1.5 rounded-full transition-colors"
-        >
-          Ver detalhes completos
-        </button>
-      ),
-    },
-  ];
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-4">
+
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Pedidos</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{pagination.total} pedido(s) encontrado(s)</p>
+          <p className="text-sm text-gray-400 mt-0.5">{pagination.total} pedido(s) encontrado(s)</p>
         </div>
       </div>
 
+      {/* Filtros */}
       <PageFilters />
 
-      {loading ? (
-        <AdminTableSkeleton rows={10} cols={7} />
-      ) : (
-        <DataTable columns={columns} data={pedidos} loading={false} pagination={pagination} onPageChange={setPage} />
-      )}
+      {/* Lista */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <Loader2 className="animate-spin text-green-600" size={28} />
+          </div>
+        ) : pedidos.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 py-16">
+            <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center">
+              <Package size={24} className="text-gray-300" />
+            </div>
+            <p className="text-sm font-semibold text-gray-400">Nenhum pedido encontrado</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-50">
+            {pedidos.map(pedido => {
+              const pag = STATUS_PAG[pedido.status] ?? STATUS_PAG.PENDING_PAYMENT;
+              return (
+                <div
+                  key={pedido.id}
+                  className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/60 transition-colors group"
+                >
+                  {/* Ícone colorido */}
+                  <div className={`hidden sm:flex w-10 h-10 rounded-xl items-center justify-center flex-shrink-0 ${pag.iconBg}`}>
+                    <ShoppingBag size={17} className={pag.text} />
+                  </div>
+
+                  {/* Número + data */}
+                  <div className="min-w-[90px] flex-shrink-0">
+                    <p className="text-xs font-mono font-bold text-gray-900 group-hover:text-green-700 transition-colors">
+                      #{pedido.id.slice(-8).toUpperCase()}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">
+                      {new Date(pedido.criadoEm).toLocaleDateString('pt-BR')}
+                    </p>
+                  </div>
+
+                  {/* Comprador */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">{pedido.compradorNome}</p>
+                    <p className="text-xs text-gray-400 truncate">{pedido.compradorEmail}</p>
+                  </div>
+
+                  {/* Método + entrega */}
+                  <div className="hidden lg:block min-w-[90px] flex-shrink-0">
+                    <p className="text-xs font-medium text-gray-700">{pedido.metodoPagamento}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{pedido.entregaTipo}</p>
+                  </div>
+
+                  {/* Total + status */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-gray-900">{formatarMoeda(pedido.total)}</p>
+                    <div className="mt-1.5">
+                      <PagBadge status={pedido.status} />
+                    </div>
+                  </div>
+
+                  {/* Botão */}
+                  <button
+                    onClick={() => setPedidoSelecionado(pedido.id)}
+                    className="flex-shrink-0 px-3 py-1.5 bg-green-50 hover:bg-green-600 hover:text-white text-green-700 rounded-lg text-xs font-bold transition-all"
+                  >
+                    Ver
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Paginação */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-gray-50 bg-gray-50/40">
+            <p className="text-xs text-gray-500">
+              Página <span className="font-bold text-gray-700">{pagination.page}</span> de {pagination.totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={pagination.page === 1 || loading}
+                onClick={() => setPage(pagination.page - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:text-green-600 hover:border-green-200 disabled:opacity-40 transition-colors"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <button
+                disabled={pagination.page === pagination.totalPages || loading}
+                onClick={() => setPage(pagination.page + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:text-green-600 hover:border-green-200 disabled:opacity-40 transition-colors"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {pedidoSelecionado && (
-        <ModalDetalhesPedido 
-          pedidoId={pedidoSelecionado} 
-          onClose={() => setPedidoSelecionado(null)} 
+        <ModalDetalhesPedido
+          pedidoId={pedidoSelecionado}
+          onClose={() => { setPedidoSelecionado(null); carregar(); }}
         />
       )}
     </div>
