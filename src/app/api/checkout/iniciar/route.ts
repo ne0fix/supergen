@@ -74,6 +74,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       status: 'PENDING_PAYMENT',
+      statusCliente: 'PEDIDO_REALIZADO',
       clienteId: clienteAuth?.clienteId ?? null,
       compradorNome: comprador.nome,
       compradorEmail: comprador.email,
@@ -214,12 +215,18 @@ export async function POST(req: NextRequest) {
         : pagamento.status === 'rejected' ? 'FAILED'
         : 'PROCESSING';
 
+      const statusClienteFinal =
+        statusFinal === 'PAID' ? 'EM_SEPARACAO'
+        : statusFinal === 'FAILED' ? 'CANCELADO'
+        : 'PAGAMENTO_PROCESSANDO';
+
       await prisma.order.update({
         where: { id: order.id },
         data: {
           mpPaymentId: String(pagamento.id),
           mpStatus:    pagamento.status ?? null,
           status:      statusFinal,
+          statusCliente: statusClienteFinal,
           pagoEm:      statusFinal === 'PAID' ? new Date() : null,
         },
       });

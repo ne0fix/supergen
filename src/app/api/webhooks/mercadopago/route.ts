@@ -104,6 +104,11 @@ export async function POST(req: NextRequest) {
 
   if (!novoStatus) return NextResponse.json({ received: true });
 
+  const statusClienteFinal =
+    novoStatus === 'PAID' ? 'EM_SEPARACAO'
+    : novoStatus === 'FAILED' ? 'CANCELADO'
+    : 'PAGAMENTO_PROCESSANDO';
+
   // Não "rebaixar" de PENDING_PAYMENT para PROCESSING — são o mesmo estado
   // semântico e o rebaixamento fazia a página sumir com o QR Code do PIX
   if (order.status === 'PENDING_PAYMENT' && novoStatus === 'PROCESSING') {
@@ -114,6 +119,7 @@ export async function POST(req: NextRequest) {
     where: { id: orderId },
     data: {
       status:      novoStatus,
+      statusCliente: statusClienteFinal,
       mpStatus:    pagamento.status ?? null,
       mpPaymentId,
       pagoEm:      novoStatus === 'PAID' ? new Date() : undefined,

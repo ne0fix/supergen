@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Printer, ArrowRight } from 'lucide-react';
 import { AdminTableSkeleton } from '@/src/components/ui/Skeleton';
 import { ColumnDef } from '@/src/components/admin/ui/DataTable';
 import DataTable from '@/src/components/admin/ui/DataTable';
 import Badge from '@/src/components/admin/ui/Badge';
 import { formatarMoeda } from '@/src/utils/formatadores';
+import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
 
 const STATUS_CONFIG: Record<string, { label: string; variant: any }> = {
   PENDING_PAYMENT: { label: 'Aguardando', variant: 'warning' },
@@ -20,6 +21,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: any }> = {
 export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, onClose: () => void }) {
   const [pedido, setPedido] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [avancando, setAvançando] = useState(false);
 
   useEffect(() => {
     fetch(`/api/admin/pedidos/${pedidoId}`)
@@ -31,12 +33,83 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, o
       .catch(() => setLoading(false));
   }, [pedidoId]);
 
+  const imprimirCupom = () => {
+    const w = window.open('', '_blank', 'width=400,height=600');
+    if (!w) return;
+    w.document.write(`
+      <html>
+        <head>
+          <title>Cupom #${pedido.id.slice(-8).toUpperCase()}</title>
+          <style>
+            @page { margin: 0; }
+            body { font-family: monospace; width: 80mm; margin: 0 auto; padding: 10px; font-size: 12px; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+            .border-b { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+            .flex-between { display: flex; justify-content: space-between; }
+            .mb-2 { margin-bottom: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="text-center bold border-b">
+            EKOMART<br>
+            Pedido #${pedido.id.slice(-8).toUpperCase()}
+          </div>
+          <div class="border-b mb-2">
+            Cliente: ${pedido.compradorNome}<br>
+            Data: ${new Date(pedido.criadoEm).toLocaleString('pt-BR')}
+          </div>
+          <div class="border-b mb-2">
+            ${pedido.items.map((i: any) => `
+              <div class="flex-between">
+                <span>${i.quantidade}x ${i.nomeProduto.substring(0, 15)}</span>
+                <span>${formatarMoeda(i.subtotal)}</span>
+              </div>
+            `).join('')}
+          </div>
+          <div class="flex-between bold">
+            <span>TOTAL</span>
+            <span>${formatarMoeda(pedido.total)}</span>
+          </div>
+          <script>
+            window.onload = () => { window.print(); window.close(); }
+          </script>
+        </body>
+      </html>
+    `);
+    w.document.close();
+  };
+
+  const avancarStatus = async () => {
+    if (!pedido || pedido.statusCliente !== 'EM_SEPARACAO') return;
+    setAvançando(true);
+    try {
+      const res = await fetch(`/api/admin/pedidos/${pedidoId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statusCliente: 'LIBERADO' })
+      });
+      if (res.ok) {
+        setPedido({ ...pedido, statusCliente: 'LIBERADO' });
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAvançando(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white p-6 rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Detalhes do Pedido <span className="text-gray-500">#{pedidoId.slice(-8).toUpperCase()}</span></h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-800">Fechar</button>
+          <div className="flex gap-2">
+            <button onClick={imprimirCupom} className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-4 py-2 rounded-lg transition-colors text-sm">
+              <Printer size={16} /> Imprimir Cupom
+            </button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-800 px-4 py-2">Fechar</button>
+          </div>
         </div>
 
         {loading ? (
@@ -76,6 +149,26 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string, o
                   <p><span className="font-semibold mt-2 block">Total:</span> <span className="text-green-600 font-bold">{formatarMoeda(pedido.total)}</span></p>
                 </div>
               </div>
+            </div>
+
+            {/* Progresso do Pedido */}
+            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 overflow-hidden flex flex-col gap-4">
+              <h3 className="font-bold text-gray-900">Progresso do Pedido</h3>
+              <div className="-mx-2 px-2">
+                <OrderTimeline statusAtual={pedido.statusCliente} entregaTipo={pedido.entregaTipo} />
+              </div>
+              {pedido.statusCliente === 'EM_SEPARACAO' && (
+                <div className="flex justify-end pt-2">
+                  <button 
+                    onClick={avancarStatus} 
+                    disabled={avancando}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-lg transition-colors text-sm"
+                  >
+                    {avancando ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} />}
+                    {pedido.entregaTipo === 'RETIRADA' ? 'Marcar como Liberado para Retirada' : 'Marcar como Saiu para Entrega'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Itens do Pedido */}
