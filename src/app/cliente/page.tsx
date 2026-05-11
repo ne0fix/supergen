@@ -62,22 +62,28 @@ export default function DashboardPage() {
       </div>
 
       {/* ─── KPIs ── */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         {[
-          { label: 'Total de pedidos', value: carregando ? '—' : String(total), icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Último status', value: carregando ? '—' : (pedidos[0]?.statusCliente ?? 'Nenhum'), icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', badge: true },
-          { label: 'Membro desde', value: carregando ? '—' : (cliente ? new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '—'), icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
+          { label: 'Total de pedidos', value: carregando ? '—' : String(total),                                                                                                              icon: Package,    color: 'text-blue-600',   bg: 'bg-blue-50'   },
+          { label: 'Último status',    value: carregando ? '—' : (pedidos[0]?.statusCliente ?? 'Nenhum'),                                                                                    icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50', badge: true },
+          { label: 'Membro desde',     value: carregando ? '—' : (cliente ? new Date(cliente.criadoEm).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }) : '—'),             icon: Clock,      color: 'text-amber-600',  bg: 'bg-amber-50'  },
         ].map(({ label, value, icon: Icon, color, bg, badge }) => (
-          <div key={label} className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 space-y-3">
-            <div className={`w-9 h-9 rounded-xl ${bg} ${color} flex items-center justify-center`}>
-              <Icon size={18} />
+          <div key={label} className="bg-white rounded-2xl border border-gray-100 p-3 sm:p-5 flex flex-col items-center text-center gap-2 sm:gap-3">
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl ${bg} flex items-center justify-center flex-shrink-0`}>
+              <Icon size={15} className={`${color} sm:hidden`} />
+              <Icon size={18} className={`${color} hidden sm:block`} />
             </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium">{label}</p>
-              {badge && value !== '—' && value !== 'Nenhum'
-                ? <div className="mt-1"><StatusBadge status={value} /></div>
-                : <p className="text-lg sm:text-xl font-black text-gray-900 mt-0.5 truncate">{value === 'Nenhum' ? '—' : value}</p>
-              }
+            <div className="w-full">
+              <p className="text-[10px] sm:text-xs text-gray-400 font-medium leading-tight">{label}</p>
+              {badge && value !== '—' && value !== 'Nenhum' ? (
+                <div className="mt-1.5 flex justify-center">
+                  <StatusBadge status={value} />
+                </div>
+              ) : (
+                <p className="text-base sm:text-xl font-black text-gray-900 mt-0.5 leading-tight">
+                  {value === 'Nenhum' ? '—' : value}
+                </p>
+              )}
             </div>
           </div>
         ))}
