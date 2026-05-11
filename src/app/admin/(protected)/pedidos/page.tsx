@@ -5,7 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Loader2, Printer, ArrowRight, X, Package,
   User, CreditCard, MapPin, ChevronLeft, ChevronRight, ShoppingBag, RotateCcw,
-  Mail, Phone, FileText, Truck, Store, Bell,
+  Mail, Phone, FileText, Truck, Store, Bell, CalendarDays,
 } from 'lucide-react';
 import { formatarMoeda } from '@/src/utils/formatadores';
 import { OrderTimeline } from '@/src/components/ui/OrderTimeline';
@@ -627,6 +627,53 @@ function PageFilters() {
   );
 }
 
+// ─── Filtro de data ───────────────────────────────────────────────────────────
+
+const DATAS = [
+  { value: 'hoje',   label: 'Hoje',           desc: 'pedidos de hoje'        },
+  { value: 'ontem',  label: 'Ontem',          desc: 'pedidos de ontem'       },
+  { value: 'semana', label: 'Últimos 7 dias', desc: 'pedidos da semana'      },
+  { value: '',       label: 'Todas as datas', desc: 'sem filtro de data'     },
+];
+
+function DateFilters() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const atual = searchParams.get('data') ?? '';
+
+  const set = (value: string) => {
+    const p = new URLSearchParams(searchParams.toString());
+    value ? p.set('data', value) : p.delete('data');
+    p.delete('page');
+    startTransition(() => { router.replace(`${pathname}?${p.toString()}`); });
+  };
+
+  return (
+    <div className={`flex flex-wrap items-center gap-2 transition-opacity ${isPending ? 'opacity-60' : ''}`}>
+      <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 mr-1">
+        <CalendarDays size={13} />
+        <span>Data</span>
+      </div>
+      {DATAS.map(d => (
+        <button
+          key={d.value}
+          onClick={() => set(d.value)}
+          disabled={isPending}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+            atual === d.value
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:cursor-wait'
+          }`}
+        >
+          {d.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ─── Lista principal ──────────────────────────────────────────────────────────
 
 function PedidosContent() {
@@ -691,7 +738,12 @@ function PedidosContent() {
         </div>
       </div>
 
-      {/* Filtros */}
+      {/* Filtro de data */}
+      <Suspense fallback={<div className="h-10" />}>
+        <DateFilters />
+      </Suspense>
+
+      {/* Filtros de status */}
       <Suspense fallback={<div className="h-10" />}>
         <PageFilters />
       </Suspense>
