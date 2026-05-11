@@ -349,101 +349,112 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
               {/* ── Grid: Comprador + Pagamento ── */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                {/* Comprador */}
+                {/* ── Card Comprador ── */}
                 <div className="rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="flex items-center gap-2.5 px-4 py-3 bg-blue-50/60 border-b border-blue-100">
+                  {/* Header */}
+                  <div className="flex items-center gap-2.5 px-4 py-3 bg-blue-50/70 border-b border-blue-100">
                     <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
                       <User size={13} className="text-white" />
                     </div>
-                    <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wider">Comprador</h3>
+                    <h3 className="text-xs font-bold text-blue-900 uppercase tracking-wider flex-1">Comprador</h3>
                     {pedido.cliente && (
-                      <span className="ml-auto text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full whitespace-nowrap">
+                      <span className="text-[10px] font-bold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
                         Cadastrado
                       </span>
                     )}
                   </div>
-                  <div className="p-4 space-y-0">
-                    {/* Avatar + nome */}
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
-                        {pedido.compradorNome?.charAt(0).toUpperCase()}
-                      </div>
-                      <p className="text-sm font-bold text-gray-900 leading-tight">{pedido.compradorNome}</p>
+
+                  {/* Avatar + nome */}
+                  <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white">
+                    <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 text-white font-extrabold text-sm">
+                      {pedido.compradorNome?.charAt(0).toUpperCase()}
                     </div>
-                    {/* Linhas de contato */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2.5">
-                        <Mail size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="text-xs text-gray-600 truncate">{pedido.compradorEmail}</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <Phone size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">{formatarTelefone(pedido.compradorTelefone)}</span>
-                      </div>
-                      <div className="flex items-center gap-2.5">
-                        <FileText size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">CPF: {mascaraCpf(pedido.compradorCpf)}</span>
-                      </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-900 leading-tight truncate">{pedido.compradorNome}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">Cliente</p>
+                    </div>
+                  </div>
+
+                  {/* Linhas label → valor */}
+                  <div className="divide-y divide-gray-50">
+                    <div className="flex items-center px-4 py-2.5 gap-3">
+                      <Mail size={12} className="text-gray-300 flex-shrink-0" />
+                      <span className="text-[11px] text-gray-400 w-10 flex-shrink-0">Email</span>
+                      <span className="text-xs font-medium text-gray-800 truncate">{pedido.compradorEmail}</span>
+                    </div>
+                    <div className="flex items-center px-4 py-2.5 gap-3">
+                      <Phone size={12} className="text-gray-300 flex-shrink-0" />
+                      <span className="text-[11px] text-gray-400 w-10 flex-shrink-0">Tel.</span>
+                      <span className="text-xs font-medium text-gray-800">{formatarTelefone(pedido.compradorTelefone)}</span>
+                    </div>
+                    <div className="flex items-center px-4 py-2.5 gap-3">
+                      <FileText size={12} className="text-gray-300 flex-shrink-0" />
+                      <span className="text-[11px] text-gray-400 w-10 flex-shrink-0">CPF</span>
+                      <span className="text-xs font-medium text-gray-800 tracking-wide">{mascaraCpf(pedido.compradorCpf)}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Pagamento & Entrega */}
+                {/* ── Card Pagamento & Entrega ── */}
                 <div className="rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="flex items-center gap-2.5 px-4 py-3 bg-green-50/60 border-b border-green-100">
+                  {/* Header */}
+                  <div className="flex items-center gap-2.5 px-4 py-3 bg-green-50/70 border-b border-green-100">
                     <div className="w-7 h-7 rounded-lg bg-green-600 flex items-center justify-center flex-shrink-0">
                       <CreditCard size={13} className="text-white" />
                     </div>
                     <h3 className="text-xs font-bold text-green-900 uppercase tracking-wider">Pagamento & Entrega</h3>
                   </div>
-                  <div className="p-4 space-y-2.5">
-                    {[
-                      { label: 'Método', value: pedido.metodoPagamento },
-                      { label: 'Tipo', value: pedido.entregaTipo === 'RETIRADA' ? 'Retirada em loja' : 'Entrega em domicílio' },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="flex items-center justify-between gap-2">
-                        <span className="text-xs text-gray-500 flex-shrink-0">{label}</span>
-                        <span className="text-xs font-semibold text-gray-900 text-right">{value}</span>
-                      </div>
-                    ))}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-gray-500 flex-shrink-0">Pagamento</span>
+
+                  {/* Linhas */}
+                  <div className="divide-y divide-gray-50">
+                    <div className="flex items-center justify-between px-4 py-2.5 gap-2">
+                      <span className="text-[11px] text-gray-400 flex-shrink-0">Método</span>
+                      <span className="text-xs font-semibold text-gray-900">{pedido.metodoPagamento}</span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-2.5 gap-2">
+                      <span className="text-[11px] text-gray-400 flex-shrink-0">Tipo de entrega</span>
+                      <span className="text-xs font-semibold text-gray-900">
+                        {pedido.entregaTipo === 'RETIRADA' ? 'Retirada em loja' : 'Entrega em domicílio'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-2.5 gap-2">
+                      <span className="text-[11px] text-gray-400 flex-shrink-0">Status pagamento</span>
                       <PagBadge status={pedido.status} />
                     </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-gray-500 flex-shrink-0">Status</span>
+                    <div className="flex items-center justify-between px-4 py-2.5 gap-2">
+                      <span className="text-[11px] text-gray-400 flex-shrink-0">Status pedido</span>
                       <CliBadge status={pedido.statusCliente} />
                     </div>
-
-                    {/* Endereço de entrega */}
-                    {pedido.entregaTipo === 'ENTREGA' && pedido.logradouro && (
-                      <div className="mt-1 pt-2.5 border-t border-gray-100">
-                        <div className="flex items-start gap-2">
-                          <Truck size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                          <p className="text-[11px] text-gray-500 leading-relaxed">
-                            {pedido.logradouro}, {pedido.numero}
-                            {pedido.complemento ? ` — ${pedido.complemento}` : ''}<br />
-                            {pedido.bairro} · {pedido.cidade} - {pedido.uf}<br />
-                            CEP {pedido.cep}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Retirada em loja */}
-                    {pedido.entregaTipo === 'RETIRADA' && (
-                      <div className="mt-1 pt-2.5 border-t border-gray-100">
-                        <div className="flex items-start gap-2">
-                          <Store size={12} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                          <p className="text-[11px] text-gray-500 leading-relaxed">
-                            Av. XVII, 404 - Sen. Carlos Jereissati<br />
-                            Pacatuba - CE · CEP 61800-000<br />
-                            (85) 99113-5449
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
+
+                  {/* Bloco de endereço */}
+                  {pedido.entregaTipo === 'ENTREGA' && pedido.logradouro && (
+                    <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+                      <div className="flex items-start gap-2.5">
+                        <Truck size={13} className="text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-semibold text-gray-800">
+                            {pedido.logradouro}, {pedido.numero}{pedido.complemento ? ` — ${pedido.complemento}` : ''}
+                          </p>
+                          <p className="text-[11px] text-gray-500">{pedido.bairro} · {pedido.cidade} - {pedido.uf}</p>
+                          <p className="text-[11px] text-gray-400">CEP {pedido.cep}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {pedido.entregaTipo === 'RETIRADA' && (
+                    <div className="px-4 py-3 border-t border-gray-100 bg-gray-50/50">
+                      <div className="flex items-start gap-2.5">
+                        <Store size={13} className="text-green-500 mt-0.5 flex-shrink-0" />
+                        <div className="space-y-0.5">
+                          <p className="text-xs font-semibold text-gray-800">Av. XVII, 404 — Sen. Carlos Jereissati</p>
+                          <p className="text-[11px] text-gray-500">Pacatuba - CE · CEP 61800-000</p>
+                          <p className="text-[11px] text-gray-400">(85) 99113-5449</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
