@@ -74,9 +74,6 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
 
-    const linhaFina  = '------------------------------------------------';
-    const linhaGrossa = '================================================';
-
     const itensHtml = pedido.items.map((i: any) => {
       const nome = i.nomeProduto.length > 28 ? i.nomeProduto.substring(0, 26) + '..' : i.nomeProduto;
       const subtotal = formatarMoeda(i.subtotal);
@@ -90,14 +87,14 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     const enderecoEntrega = pedido.entregaTipo === 'ENTREGA'
       ? `
         <div class="section-title">ENDERECO DE ENTREGA</div>
-        <div class="linha">${linhaFina}</div>
+        <div class="sep"></div>
         <div>${pedido.logradouro || ''}, ${pedido.numero || ''}${pedido.complemento ? ' - ' + pedido.complemento : ''}</div>
         <div>${pedido.bairro || ''}</div>
         <div>${pedido.cidade || ''} - ${pedido.uf || ''} &nbsp; CEP: ${pedido.cep || ''}</div>
       `
       : `
         <div class="section-title">RETIRADA EM LOJA</div>
-        <div class="linha">${linhaFina}</div>
+        <div class="sep"></div>
         <div>Av. XVII, 404 - Sen. Carlos Jereissati</div>
         <div>Pacatuba - CE &nbsp; CEP: 61800-000</div>
         <div>Tel: (85) 98105-8342</div>
@@ -127,8 +124,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     .bold     { font-weight: bold; }
     .big      { font-size: 14px; font-weight: bold; }
     .small    { font-size: 9px; }
-    .linha    { border-bottom: 1px dashed #000; margin: 4px 0; }
-    .linha-s  { border-bottom: 1px solid  #000; margin: 4px 0; }
+    .sep      { border-bottom: 1px solid #000; margin: 5px 0; }
     .row      { display: flex; justify-content: space-between; align-items: baseline; }
     .indent   { padding-left: 8px; color: #333; }
     .item-nome{ font-weight: bold; margin-top: 5px; }
@@ -162,9 +158,9 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     <div class="small">Tel: (85) 98105-8342</div>
   </div>
 
-  <div class="linha-s" style="margin-top:6px"></div>
+  <div class="sep" style="margin-top:6px"></div>
   <div class="center bold" style="font-size:12px; letter-spacing:1px;">CUPOM NAO FISCAL</div>
-  <div class="linha-s"></div>
+  <div class="sep"></div>
 
   <!-- PEDIDO -->
   <div class="row">
@@ -176,23 +172,23 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     <span>${dataHora}</span>
   </div>
 
-  <div class="linha"></div>
+  <div class="sep"></div>
 
   <!-- CLIENTE -->
   <div class="section-title">DADOS DO CLIENTE</div>
-  <div class="linha">${linhaFina}</div>
+  <div class="sep"></div>
   <div class="row"><span>Nome:</span><span>${pedido.compradorNome}</span></div>
   <div class="row"><span>CPF:</span><span>${pedido.compradorCpf}</span></div>
   <div class="row"><span>Tel:</span><span>${pedido.compradorTelefone}</span></div>
 
-  <div class="linha"></div>
+  <div class="sep"></div>
 
   <!-- ITENS -->
   <div class="section-title">ITENS DO PEDIDO</div>
-  <div class="linha">${linhaFina}</div>
+  <div class="sep"></div>
   ${itensHtml}
 
-  <div class="linha"></div>
+  <div class="sep"></div>
 
   <!-- TOTAIS -->
   <div class="row"><span>Subtotal:</span><span>${formatarMoeda(pedido.subtotal)}</span></div>
@@ -200,7 +196,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
     <span>Frete:</span>
     <span>${pedido.frete === 0 ? 'GRATIS' : formatarMoeda(pedido.frete)}</span>
   </div>
-  <div class="linha-s"></div>
+  <div class="sep"></div>
   <div class="total-box">
     <div class="row">
       <span class="bold" style="font-size:13px;">TOTAL A PAGAR</span>
@@ -210,7 +206,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
 
   <!-- PAGAMENTO -->
   <div class="section-title">FORMA DE PAGAMENTO</div>
-  <div class="linha">${linhaFina}</div>
+  <div class="sep"></div>
   <div class="row">
     <span>Metodo:</span>
     <span class="bold">${pedido.metodoPagamento}</span>
@@ -218,19 +214,19 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <div class="row">
     <span>Status Pag.:</span>
     <span class="bold">${
-      pedido.status === 'PAID'      ? 'PAGO'           :
+      pedido.status === 'PAID'            ? 'PAGO'       :
       pedido.status === 'PENDING_PAYMENT' ? 'AGUARDANDO' :
-      pedido.status === 'CANCELLED' ? 'CANCELADO'      :
-      pedido.status === 'FAILED'    ? 'FALHOU'         : pedido.status
+      pedido.status === 'CANCELLED'       ? 'CANCELADO'  :
+      pedido.status === 'FAILED'          ? 'FALHOU'     : pedido.status
     }</span>
   </div>
 
-  <div class="linha"></div>
+  <div class="sep"></div>
 
   <!-- ENTREGA / RETIRADA -->
   ${enderecoEntrega}
 
-  <div class="linha-s" style="margin-top:8px"></div>
+  <div class="sep" style="margin-top:8px"></div>
 
   <!-- RODAPÉ -->
   <div class="rodape">
