@@ -48,6 +48,19 @@ function CliBadge({ status }: { status?: string }) {
   );
 }
 
+// ─── Helpers de formatação ────────────────────────────────────────────────────
+
+function mascaraCpf(cpf: string): string {
+  return (cpf ?? '').replace(/(\d{3})\.\d{3}\.\d{3}(-\d{2})/, '$1.***.***$2');
+}
+
+function formatarTelefone(tel: string): string {
+  const d = (tel ?? '').replace(/\D/g, '');
+  if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
+  if (d.length === 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+  return tel;
+}
+
 // ─── Modal ────────────────────────────────────────────────────────────────────
 
 export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; onClose: () => void }) {
@@ -184,7 +197,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <div class="sep"></div>
   <div class="row"><span>Nome:</span><span>${pedido.compradorNome}</span></div>
   <div class="row"><span>CPF:</span><span>${cpfMascarado}</span></div>
-  <div class="row"><span>Tel:</span><span>${pedido.compradorTelefone}</span></div>
+  <div class="row"><span>Tel:</span><span>${formatarTelefone(pedido.compradorTelefone)}</span></div>
 
   <div class="sep"></div>
 
@@ -368,11 +381,11 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
                       </div>
                       <div className="flex items-center gap-2.5">
                         <Phone size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">{pedido.compradorTelefone}</span>
+                        <span className="text-xs text-gray-600">{formatarTelefone(pedido.compradorTelefone)}</span>
                       </div>
                       <div className="flex items-center gap-2.5">
                         <FileText size={12} className="text-gray-400 flex-shrink-0" />
-                        <span className="text-xs text-gray-600">CPF: {pedido.compradorCpf}</span>
+                        <span className="text-xs text-gray-600">CPF: {mascaraCpf(pedido.compradorCpf)}</span>
                       </div>
                     </div>
                   </div>
