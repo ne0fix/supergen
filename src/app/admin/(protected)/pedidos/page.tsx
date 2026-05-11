@@ -66,34 +66,190 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
 
   const imprimirCupom = () => {
     if (!pedido) return;
-    const w = window.open('', '_blank', 'width=400,height=600');
+    const w = window.open('', '_blank', 'width=320,height=800');
     if (!w) return;
-    w.document.write(`
-      <html>
-        <head>
-          <title>Cupom #${pedido.id.slice(-8).toUpperCase()}</title>
-          <style>
-            @page { margin: 0; }
-            body { font-family: monospace; width: 80mm; margin: 0 auto; padding: 10px; font-size: 12px; }
-            .center { text-align: center; } .bold { font-weight: bold; }
-            .sep { border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-            .row { display: flex; justify-content: space-between; }
-          </style>
-        </head>
-        <body>
-          <div class="center bold sep">EKOMART<br>Pedido #${pedido.id.slice(-8).toUpperCase()}</div>
-          <div class="sep">
-            Cliente: ${pedido.compradorNome}<br>
-            Data: ${new Date(pedido.criadoEm).toLocaleString('pt-BR')}
-          </div>
-          <div class="sep">
-            ${pedido.items.map((i: any) => `<div class="row"><span>${i.quantidade}x ${i.nomeProduto.substring(0, 18)}</span><span>${formatarMoeda(i.subtotal)}</span></div>`).join('')}
-          </div>
-          <div class="row bold"><span>TOTAL</span><span>${formatarMoeda(pedido.total)}</span></div>
-          <script>window.onload = () => { window.print(); window.close(); }</script>
-        </body>
-      </html>
-    `);
+
+    const dataHora = new Date(pedido.criadoEm).toLocaleString('pt-BR', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+    });
+
+    const linhaFina  = '------------------------------------------------';
+    const linhaGrossa = '================================================';
+
+    const itensHtml = pedido.items.map((i: any) => {
+      const nome = i.nomeProduto.length > 28 ? i.nomeProduto.substring(0, 26) + '..' : i.nomeProduto;
+      const subtotal = formatarMoeda(i.subtotal);
+      const unitario = `${i.quantidade} x ${formatarMoeda(i.preco)}`;
+      return `
+        <div class="item-nome">${nome}</div>
+        <div class="row"><span class="indent">${unitario}</span><span>${subtotal}</span></div>
+      `;
+    }).join('');
+
+    const enderecoEntrega = pedido.entregaTipo === 'ENTREGA'
+      ? `
+        <div class="section-title">ENDERECO DE ENTREGA</div>
+        <div class="linha">${linhaFina}</div>
+        <div>${pedido.logradouro || ''}, ${pedido.numero || ''}${pedido.complemento ? ' - ' + pedido.complemento : ''}</div>
+        <div>${pedido.bairro || ''}</div>
+        <div>${pedido.cidade || ''} - ${pedido.uf || ''} &nbsp; CEP: ${pedido.cep || ''}</div>
+      `
+      : `
+        <div class="section-title">RETIRADA EM LOJA</div>
+        <div class="linha">${linhaFina}</div>
+        <div>Av. XVII, 404 - Sen. Carlos Jereissati</div>
+        <div>Pacatuba - CE &nbsp; CEP: 61800-000</div>
+        <div>Tel: (85) 98105-8342</div>
+        <div class="obs">Aguarde o aviso de liberacao para retirada.</div>
+      `;
+
+    w.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cupom #${pedido.id.slice(-8).toUpperCase()}</title>
+  <style>
+    @page {
+      size: 80mm auto;
+      margin: 4mm 3mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      width: 72mm;
+      color: #000;
+      line-height: 1.45;
+    }
+    .center   { text-align: center; }
+    .right    { text-align: right; }
+    .bold     { font-weight: bold; }
+    .big      { font-size: 14px; font-weight: bold; }
+    .small    { font-size: 9px; }
+    .linha    { border-bottom: 1px dashed #000; margin: 4px 0; }
+    .linha-s  { border-bottom: 1px solid  #000; margin: 4px 0; }
+    .row      { display: flex; justify-content: space-between; align-items: baseline; }
+    .indent   { padding-left: 8px; color: #333; }
+    .item-nome{ font-weight: bold; margin-top: 5px; }
+    .section-title {
+      font-weight: bold;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      margin-top: 6px;
+    }
+    .total-box {
+      border: 1px solid #000;
+      padding: 4px 6px;
+      margin: 6px 0;
+    }
+    .total-valor { font-size: 15px; font-weight: bold; }
+    .obs { font-size: 9px; color: #444; margin-top: 3px; font-style: italic; }
+    .rodape { font-size: 9px; text-align: center; margin-top: 8px; color: #333; }
+    @media print {
+      body { width: 72mm; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CABEÇALHO -->
+  <div class="center">
+    <div class="big">SUPERMERCADO G&amp;N</div>
+    <div class="small">CNPJ: 00.000.000/0001-00</div>
+    <div class="small">Av. XVII, 404 - Sen. Carlos Jereissati</div>
+    <div class="small">Pacatuba - CE &nbsp; CEP: 61800-000</div>
+    <div class="small">Tel: (85) 98105-8342</div>
+  </div>
+
+  <div class="linha-s" style="margin-top:6px"></div>
+  <div class="center bold" style="font-size:12px; letter-spacing:1px;">CUPOM NAO FISCAL</div>
+  <div class="linha-s"></div>
+
+  <!-- PEDIDO -->
+  <div class="row">
+    <span class="bold">Pedido Nº:</span>
+    <span class="bold">#${pedido.id.slice(-8).toUpperCase()}</span>
+  </div>
+  <div class="row">
+    <span>Data/Hora:</span>
+    <span>${dataHora}</span>
+  </div>
+
+  <div class="linha"></div>
+
+  <!-- CLIENTE -->
+  <div class="section-title">DADOS DO CLIENTE</div>
+  <div class="linha">${linhaFina}</div>
+  <div class="row"><span>Nome:</span><span>${pedido.compradorNome}</span></div>
+  <div class="row"><span>CPF:</span><span>${pedido.compradorCpf}</span></div>
+  <div class="row"><span>Tel:</span><span>${pedido.compradorTelefone}</span></div>
+
+  <div class="linha"></div>
+
+  <!-- ITENS -->
+  <div class="section-title">ITENS DO PEDIDO</div>
+  <div class="linha">${linhaFina}</div>
+  ${itensHtml}
+
+  <div class="linha"></div>
+
+  <!-- TOTAIS -->
+  <div class="row"><span>Subtotal:</span><span>${formatarMoeda(pedido.subtotal)}</span></div>
+  <div class="row">
+    <span>Frete:</span>
+    <span>${pedido.frete === 0 ? 'GRATIS' : formatarMoeda(pedido.frete)}</span>
+  </div>
+  <div class="linha-s"></div>
+  <div class="total-box">
+    <div class="row">
+      <span class="bold" style="font-size:13px;">TOTAL A PAGAR</span>
+      <span class="total-valor">${formatarMoeda(pedido.total)}</span>
+    </div>
+  </div>
+
+  <!-- PAGAMENTO -->
+  <div class="section-title">FORMA DE PAGAMENTO</div>
+  <div class="linha">${linhaFina}</div>
+  <div class="row">
+    <span>Metodo:</span>
+    <span class="bold">${pedido.metodoPagamento}</span>
+  </div>
+  <div class="row">
+    <span>Status Pag.:</span>
+    <span class="bold">${
+      pedido.status === 'PAID'      ? 'PAGO'           :
+      pedido.status === 'PENDING_PAYMENT' ? 'AGUARDANDO' :
+      pedido.status === 'CANCELLED' ? 'CANCELADO'      :
+      pedido.status === 'FAILED'    ? 'FALHOU'         : pedido.status
+    }</span>
+  </div>
+
+  <div class="linha"></div>
+
+  <!-- ENTREGA / RETIRADA -->
+  ${enderecoEntrega}
+
+  <div class="linha-s" style="margin-top:8px"></div>
+
+  <!-- RODAPÉ -->
+  <div class="rodape">
+    <div>Obrigado pela preferencia!</div>
+    <div>Volte sempre ao Supermercado G&amp;N</div>
+    <div style="margin-top:4px;">www.digitalgen.vercel.app</div>
+    <div style="margin-top:6px; font-size:8px;">
+      Documento emitido em ${new Date().toLocaleString('pt-BR')}
+    </div>
+  </div>
+
+  <script>
+    window.onload = function() {
+      window.print();
+      setTimeout(function(){ window.close(); }, 1000);
+    };
+  </script>
+</body>
+</html>`);
     w.document.close();
   };
 
