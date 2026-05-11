@@ -51,7 +51,9 @@ function CliBadge({ status }: { status?: string }) {
 // ─── Helpers de formatação ────────────────────────────────────────────────────
 
 function mascaraCpf(cpf: string): string {
-  return (cpf ?? '').replace(/(\d{3})\.\d{3}\.\d{3}(-\d{2})/, '$1.***.***$2');
+  const d = (cpf ?? '').replace(/\D/g, '');
+  if (d.length !== 11) return cpf ?? '';
+  return `${d.slice(0, 3)}.***.***-${d.slice(9)}`;
 }
 
 function formatarTelefone(tel: string): string {
@@ -86,11 +88,6 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
       day: '2-digit', month: '2-digit', year: 'numeric',
       hour: '2-digit', minute: '2-digit', second: '2-digit',
     });
-
-    const cpfMascarado = (pedido.compradorCpf ?? '').replace(
-      /(\d{3})\.\d{3}\.\d{3}(-\d{2})/,
-      '$1.***.***$2',
-    );
 
     const itensHtml = pedido.items.map((i: any) => {
       const nome = i.nomeProduto.length > 28 ? i.nomeProduto.substring(0, 26) + '..' : i.nomeProduto;
@@ -196,7 +193,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <div class="section-title">DADOS DO CLIENTE</div>
   <div class="sep"></div>
   <div class="row"><span>Nome:</span><span>${pedido.compradorNome}</span></div>
-  <div class="row"><span>CPF:</span><span>${cpfMascarado}</span></div>
+  <div class="row"><span>CPF:</span><span>${mascaraCpf(pedido.compradorCpf)}</span></div>
   <div class="row"><span>Tel:</span><span>${formatarTelefone(pedido.compradorTelefone)}</span></div>
 
   <div class="sep"></div>
