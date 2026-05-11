@@ -199,7 +199,7 @@ export function ModalDetalhesPedido({ pedidoId, onClose }: { pedidoId: string; o
   <div class="sep"></div>
   <div class="total-box">
     <div class="row">
-      <span class="bold" style="font-size:13px;">TOTAL A PAGAR</span>
+      <span class="bold" style="font-size:13px;">TOTAL</span>
       <span class="total-valor">${formatarMoeda(pedido.total)}</span>
     </div>
   </div>
