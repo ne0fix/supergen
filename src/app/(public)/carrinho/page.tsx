@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useCarrinhoViewModel } from '@/src/viewmodels/carrinho.vm';
 import { formatarMoeda } from '@/src/utils/formatadores';
-import { ChevronRight, Minus, Plus, Trash2, ShieldCheck, ShoppingCart } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Minus, Plus, Trash2, ShieldCheck, ShoppingCart, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function CarrinhoPage() {
@@ -66,8 +66,26 @@ export default function CarrinhoPage() {
   return (
     <div className="container mx-auto px-4 max-w-7xl py-5 sm:py-8">
 
-      {/* Breadcrumbs */}
-      <div className="flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-5">
+      {/* Barra superior mobile — fechar carrinho */}
+      <div className="flex sm:hidden items-center justify-between mb-4">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-green-600 transition-colors"
+        >
+          <ChevronLeft size={20} />
+          Continuar comprando
+        </button>
+        <button
+          onClick={() => router.back()}
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+          aria-label="Fechar carrinho"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      {/* Breadcrumbs — apenas desktop */}
+      <div className="hidden sm:flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 mb-5">
         <Link href="/" className="hover:text-green-600">Início</Link>
         <ChevronRight size={12} />
         <span className="font-medium text-gray-900">Meu Carrinho</span>
