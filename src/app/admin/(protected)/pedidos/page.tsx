@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useState, useEffect, useCallback, Suspense, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import {
   Loader2, Printer, ArrowRight, X, Package,
@@ -417,25 +417,29 @@ function PageFilters() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
   const atual = searchParams.get('status') ?? '';
 
   const set = (value: string) => {
     const p = new URLSearchParams(searchParams.toString());
     value ? p.set('status', value) : p.delete('status');
-    p.set('page', '1');
-    router.push(`${pathname}?${p.toString()}`);
+    p.delete('page');
+    startTransition(() => {
+      router.replace(`${pathname}?${p.toString()}`);
+    });
   };
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className={`flex flex-wrap gap-2 transition-opacity ${isPending ? 'opacity-60' : 'opacity-100'}`}>
       {FILTROS.map(f => (
         <button
           key={f.value}
           onClick={() => set(f.value)}
+          disabled={isPending}
           className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
             atual === f.value
               ? 'bg-green-600 text-white shadow-lg shadow-green-600/20'
-              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+              : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:cursor-wait'
           }`}
         >
           {f.label}
@@ -491,7 +495,9 @@ function PedidosContent() {
       </div>
 
       {/* Filtros */}
-      <PageFilters />
+      <Suspense fallback={<div className="h-10" />}>
+        <PageFilters />
+      </Suspense>
 
       {/* Lista */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
