@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import prisma from '@/src/lib/prisma';
+import { OrderStatus } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 import ProductThumb from '@/src/components/admin/ui/ProductThumb';
@@ -11,52 +12,58 @@ import {
 } from 'lucide-react';
 
 async function getDashboardData() {
-  const [metricas, ultimosProdutos, vendasRaw] = await Promise.all([
-    prisma.$queryRaw<{ total_produtos: bigint; sem_estoque: bigint; total_categorias: bigint; total_secoes: bigint }[]>`
-      SELECT
-        (SELECT COUNT(*) FROM "Produto"  WHERE ativo = true)               AS total_produtos,
-        (SELECT COUNT(*) FROM "Produto"  WHERE ativo = true AND "emEstoque" = false) AS sem_estoque,
-        (SELECT COUNT(*) FROM "Categoria" WHERE ativo = true)              AS total_categorias,
-        (SELECT COUNT(*) FROM "Secao"    WHERE ativo = true)               AS total_secoes
-    `,
+  const agora = new Date();
+  const inicioDia = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+  const inicioSemana = new Date(agora); inicioSemana.setDate(agora.getDate() - 7);
+  const inicioQuinzena = new Date(agora); inicioQuinzena.setDate(agora.getDate() - 15);
+  const inicioMes = new Date(agora.getFullYear(), agora.getMonth(), 1);
+
+  const statusFiltro = { in: [OrderStatus.PAID, OrderStatus.PROCESSING] };
+
+  const [
+    totalProdutos,
+    produtosSemEstoque,
+    totalCategorias,
+    totalSecoes,
+    ultimosProdutos,
+    vendasHoje,
+    vendasSemana,
+    vendasQuinzena,
+    vendasMes,
+  ] = await Promise.all([
+    prisma.produto.count({ where: { ativo: true } }),
+    prisma.produto.count({ where: { ativo: true, emEstoque: false } }),
+    prisma.categoria.count({ where: { ativo: true } }),
+    prisma.secao.count({ where: { ativo: true } }),
     prisma.produto.findMany({
       where: { ativo: true },
       orderBy: { atualizadoEm: 'desc' },
       take: 5,
       include: { categoria: true },
     }),
-    prisma.$queryRaw<{
-      hoje_total: string; hoje_pedidos: bigint;
-      semana_total: string; semana_pedidos: bigint;
-      quinzena_total: string; quinzena_pedidos: bigint;
-      mes_total: string; mes_pedidos: bigint;
-    }[]>`
-      SELECT
-        COALESCE(SUM(CASE WHEN "criadoEm" >= date_trunc('day', NOW()) THEN total END), 0)::text            AS hoje_total,
-        COUNT(CASE WHEN "criadoEm" >= date_trunc('day', NOW()) THEN 1 END)                                 AS hoje_pedidos,
-        COALESCE(SUM(CASE WHEN "criadoEm" >= NOW() - INTERVAL '7 days' THEN total END), 0)::text           AS semana_total,
-        COUNT(CASE WHEN "criadoEm" >= NOW() - INTERVAL '7 days' THEN 1 END)                               AS semana_pedidos,
-        COALESCE(SUM(CASE WHEN "criadoEm" >= NOW() - INTERVAL '15 days' THEN total END), 0)::text          AS quinzena_total,
-        COUNT(CASE WHEN "criadoEm" >= NOW() - INTERVAL '15 days' THEN 1 END)                              AS quinzena_pedidos,
-        COALESCE(SUM(CASE WHEN "criadoEm" >= date_trunc('month', NOW()) THEN total END), 0)::text          AS mes_total,
-        COUNT(CASE WHEN "criadoEm" >= date_trunc('month', NOW()) THEN 1 END)                               AS mes_pedidos
-      FROM "Order"
-      WHERE status IN ('PAID', 'PROCESSING')
-    `,
+    prisma.order.aggregate({
+      _sum: { total: true }, _count: { id: true },
+      where: { status: statusFiltro, criadoEm: { gte: inicioDia } },
+    }),
+    prisma.order.aggregate({
+      _sum: { total: true }, _count: { id: true },
+      where: { status: statusFiltro, criadoEm: { gte: inicioSemana } },
+    }),
+    prisma.order.aggregate({
+      _sum: { total: true }, _count: { id: true },
+      where: { status: statusFiltro, criadoEm: { gte: inicioQuinzena } },
+    }),
+    prisma.order.aggregate({
+      _sum: { total: true }, _count: { id: true },
+      where: { status: statusFiltro, criadoEm: { gte: inicioMes } },
+    }),
   ]);
 
-  const m = metricas[0];
-  const totalProdutos      = Number(m.total_produtos);
-  const produtosSemEstoque = Number(m.sem_estoque);
-  const totalCategorias    = Number(m.total_categorias);
-  const totalSecoes        = Number(m.total_secoes);
-
-  const v = vendasRaw[0];
   const vendas = {
-    hoje:     { total: parseFloat(v.hoje_total),     pedidos: Number(v.hoje_pedidos) },
-    semana:   { total: parseFloat(v.semana_total),   pedidos: Number(v.semana_pedidos) },
-    quinzena: { total: parseFloat(v.quinzena_total), pedidos: Number(v.quinzena_pedidos) },
-    mes:      { total: parseFloat(v.mes_total),      pedidos: Number(v.mes_pedidos) },
+    hoje:     { total: vendasHoje._sum.total?.toNumber()     ?? 0, pedidos: vendasHoje._count.id },
+    semana:   { total: vendasSemana._sum.total?.toNumber()   ?? 0, pedidos: vendasSemana._count.id },
+    quinzena: { total: vendasQuinzena._sum.total?.toNumber() ?? 0, pedidos: vendasQuinzena._count.id },
+    mes:      { total: vendasMes._sum.total?.toNumber()      ?? 0, pedidos: vendasMes._count.id },
   };
 
   return { totalProdutos, produtosSemEstoque, totalCategorias, totalSecoes, ultimosProdutos, vendas };
